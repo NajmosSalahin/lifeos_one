@@ -20,6 +20,7 @@ export function HabitPage() {
   const { data: habits, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.habits.list(),
     queryFn: () => apiClient.get('/habits').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const logMutation = useMutation({
@@ -31,7 +32,19 @@ export function HabitPage() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(`/habits/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.habits.all }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.habits.all });
+      const previousHabits = queryClient.getQueryData(queryKeys.habits.list());
+      queryClient.setQueryData(queryKeys.habits.list(), (old: unknown) => {
+        const habits = Array.isArray(old) ? old : [];
+        return habits.filter((h: { id: string }) => h.id !== id);
+      });
+      return { previousHabits };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousHabits) queryClient.setQueryData(queryKeys.habits.list(), context.previousHabits);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.habits.all }),
   });
 
   if (isLoading) return <ListSkeleton count={5} />;
@@ -63,7 +76,7 @@ export function HabitPage() {
                     <div className="h-3 w-3 rounded-full" style={{ backgroundColor: habit.color }} />
                     <CardTitle>{habit.name}</CardTitle>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => logMutation.mutate(habit.id)}>
                       <CheckCircle size={16} className="text-success" />
                     </Button>

@@ -20,11 +20,13 @@ export function BreathingPage() {
   const { data: techniques, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.breathing.techniques(),
     queryFn: () => apiClient.get('/breathing/techniques').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const { data: mindful } = useQuery({
     queryKey: queryKeys.breathing.mindfulMinutes(),
     queryFn: () => apiClient.get('/breathing/mindful-minutes').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   if (isLoading) return <ListSkeleton />;

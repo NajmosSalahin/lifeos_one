@@ -27,12 +27,33 @@ export function GoalsPage() {
   const { data: goals, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.goals.list(),
     queryFn: () => apiClient.get('/goals').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const toggleMilestone = useMutation({
     mutationFn: ({ goalId, milestoneId, completed }: { goalId: string; milestoneId: string; completed: boolean }) =>
       apiClient.patch(`/goals/${goalId}/milestones/${milestoneId}`, { completed }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.goals.all }),
+    onMutate: async ({ goalId, milestoneId, completed }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.goals.all });
+      const previousGoals = queryClient.getQueryData(queryKeys.goals.list());
+      queryClient.setQueryData(queryKeys.goals.list(), (old: unknown) => {
+        const goals = Array.isArray(old) ? old : [];
+        return goals.map((goal: { id: string; progress: number; milestones: { id: string; completed: boolean }[] }) => {
+          if (goal.id !== goalId) return goal;
+          const milestones = goal.milestones.map((ms) =>
+            ms.id === milestoneId ? { ...ms, completed } : ms
+          );
+          const completedCount = milestones.filter((ms) => ms.completed).length;
+          const progress = milestones.length > 0 ? Math.round((completedCount / milestones.length) * 100) : 0;
+          return { ...goal, milestones, progress };
+        });
+      });
+      return { previousGoals };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousGoals) queryClient.setQueryData(queryKeys.goals.list(), context.previousGoals);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.goals.all }),
   });
 
   if (isLoading) return <ListSkeleton />;

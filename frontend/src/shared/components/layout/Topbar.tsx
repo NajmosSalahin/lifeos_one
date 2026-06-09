@@ -42,7 +42,7 @@ export function Topbar() {
       <div ref={menuRef} className="relative">
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="flex items-center gap-2 rounded-md p-1.5 hover:bg-surface-raised transition-colors"
+          className="flex items-center gap-3 rounded-md p-2 hover:bg-surface-raised transition-colors"
         >
           <Avatar name={user?.name || 'User'} url={user?.avatarUrl} size="sm" />
           <span className="text-sm font-medium text-text-primary max-w-[120px] truncate">

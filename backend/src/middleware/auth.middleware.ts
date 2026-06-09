@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { env } from '../config/env';
 import { prisma } from '../config/prisma';
 
@@ -7,6 +7,12 @@ export interface AuthRequest extends Request {
   userId?: string;
   userEmail?: string;
 }
+
+const JWKS = createRemoteJWKSet(
+  new URL(`${env.SUPABASE_URL}/auth/v1/.well-known/jwks.json`)
+);
+
+const ISSUER = `${env.SUPABASE_URL}/auth/v1`;
 
 export async function authMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
   try {
@@ -17,10 +23,10 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     }
 
     const token = authHeader.split(' ')[1];
-    const payload = jwt.verify(token, env.SUPABASE_JWT_SECRET, { algorithms: ['HS256'] }) as jwt.JwtPayload;
+    const { payload } = await jwtVerify(token, JWKS, { issuer: ISSUER });
 
-    const userId = payload.sub;
-    const email = payload.email as string;
+    const userId = typeof payload.sub === 'string' ? payload.sub : undefined;
+    const email = typeof payload.email === 'string' ? payload.email : '';
 
     if (!userId) {
       res.status(401).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Invalid token payload' } });
@@ -30,7 +36,7 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     let user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       user = await prisma.user.create({
-        data: { id: userId, email: email ?? '', name: email?.split('@')[0] ?? 'User', emailVerified: true },
+        data: { id: userId, email, name: email?.split('@')[0] ?? 'User', emailVerified: true },
       });
     }
 

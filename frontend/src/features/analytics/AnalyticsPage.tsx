@@ -21,6 +21,7 @@ export function AnalyticsPage() {
   const { data: overview, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.analytics.overview(),
     queryFn: () => apiClient.get('/analytics/overview').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   if (error) return <ErrorState onRetry={refetch} />;

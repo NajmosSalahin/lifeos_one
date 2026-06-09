@@ -9,7 +9,8 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   DATABASE_URL: z.string(),
   DIRECT_URL: z.string(),
-  SUPABASE_JWT_SECRET: z.string().min(1),
+  SUPABASE_JWT_SECRET: z.string().optional(),
+  SUPABASE_URL: z.string().url(),
   WEATHER_API_KEY: z.string().optional(),
 });
 

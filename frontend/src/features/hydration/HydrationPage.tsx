@@ -21,22 +21,38 @@ export function HydrationPage() {
   const { data: logs, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.hydration.logs(),
     queryFn: () => apiClient.get('/hydration').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const { data: templates } = useQuery({
     queryKey: queryKeys.hydration.templates(),
     queryFn: () => apiClient.get('/hydration/templates').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const { data: weatherGoal } = useQuery({
     queryKey: queryKeys.hydration.weatherGoal(),
     queryFn: () => apiClient.get('/hydration/weather-goal?lat=40.7128&lng=-74.0060').then(r => r.data.data),
     retry: false,
+    staleTime: 30_000,
   });
 
   const logMutation = useMutation({
     mutationFn: (amount: number) => apiClient.post('/hydration', { amount, loggedAt: new Date().toISOString() }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.hydration.all }),
+    onMutate: async (amount) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.hydration.all });
+      const previousLogs = queryClient.getQueryData(queryKeys.hydration.logs());
+      queryClient.setQueryData(queryKeys.hydration.logs(), (old: unknown) => {
+        const optimisticLog = { id: `temp-${Date.now()}`, amount, loggedAt: new Date().toISOString() };
+        const logs = Array.isArray(old) ? old : [];
+        return [optimisticLog, ...logs];
+      });
+      return { previousLogs };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousLogs) queryClient.setQueryData(queryKeys.hydration.logs(), context.previousLogs);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.hydration.all }),
   });
 
   if (isLoading) return <ListSkeleton />;

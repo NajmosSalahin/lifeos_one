@@ -20,6 +20,7 @@ export function CalendarPage() {
   const { data: monthData, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.calendar.month(year, month),
     queryFn: () => apiClient.get(`/calendar/${year}/${month}`).then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const days = eachDayOfInterval({ start: startOfMonth(currentDate), end: endOfMonth(currentDate) });
@@ -56,12 +57,12 @@ export function CalendarPage() {
             <ErrorState onRetry={refetch} />
           ) : (
             <div>
-              <div className="grid grid-cols-7 gap-1 mb-1">
+              <div className="grid grid-cols-7 gap-3 mb-2">
                 {dayNames.map((name) => (
                   <div key={name} className="py-2 text-center text-xs font-medium text-text-secondary">{name}</div>
                 ))}
               </div>
-              <div className="grid grid-cols-7 gap-1">
+              <div className="grid grid-cols-7 gap-3">
                 {Array.from({ length: startDay }).map((_, i) => (
                   <div key={`empty-${i}`} />
                 ))}
@@ -77,7 +78,7 @@ export function CalendarPage() {
                     >
                       <span className="font-medium text-text-primary">{format(day, 'd')}</span>
                       {info && (
-                        <div className="mt-1 flex gap-0.5">
+                        <div className="mt-1 flex gap-1.5">
                           {info.habits > 0 && <div className="h-1.5 w-1.5 rounded-full bg-accent" />}
                           {info.mood !== null && <div className="h-1.5 w-1.5 rounded-full bg-success" />}
                           {info.sleep && <div className="h-1.5 w-1.5 rounded-full bg-[var(--color-accent-hover)]" />}

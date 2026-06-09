@@ -22,31 +22,37 @@ export function DashboardPage() {
   const { data: habits, isLoading: habitsLoading, error: habitsError, refetch: refetchHabits } = useQuery({
     queryKey: ['dashboard', 'habits'],
     queryFn: () => apiClient.get('/habits').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const { data: mood, isLoading: moodLoading } = useQuery({
     queryKey: ['dashboard', 'mood'],
     queryFn: () => apiClient.get('/mood').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const { data: sleep, isLoading: sleepLoading } = useQuery({
     queryKey: ['dashboard', 'sleep'],
     queryFn: () => apiClient.get('/sleep').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const { data: hydration, isLoading: hydrationLoading } = useQuery({
     queryKey: ['dashboard', 'hydration'],
     queryFn: () => apiClient.get('/hydration').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const { data: journal } = useQuery({
     queryKey: ['dashboard', 'journal'],
     queryFn: () => apiClient.get('/journal').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const { data: goals } = useQuery({
     queryKey: ['dashboard', 'goals'],
     queryFn: () => apiClient.get('/goals').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const today = format(new Date(), 'EEEE, MMMM d');

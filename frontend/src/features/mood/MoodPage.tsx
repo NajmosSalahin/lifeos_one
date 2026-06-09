@@ -33,11 +33,25 @@ export function MoodPage() {
   const { data: logs, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.mood.list(),
     queryFn: () => apiClient.get('/mood').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const logMutation = useMutation({
     mutationFn: (score: number) => apiClient.post('/mood', { score, loggedAt: new Date().toISOString() }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.mood.all }),
+    onMutate: async (score) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.mood.all });
+      const previousLogs = queryClient.getQueryData(queryKeys.mood.list());
+      queryClient.setQueryData(queryKeys.mood.list(), (old: unknown) => {
+        const optimisticLog = { id: `temp-${Date.now()}`, score, loggedAt: new Date().toISOString() };
+        const logs = Array.isArray(old) ? old : [];
+        return [optimisticLog, ...logs];
+      });
+      return { previousLogs };
+    },
+    onError: (_err, _score, context) => {
+      if (context?.previousLogs) queryClient.setQueryData(queryKeys.mood.list(), context.previousLogs);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.mood.all }),
   });
 
   if (isLoading) return <ListSkeleton />;
@@ -59,7 +73,7 @@ export function MoodPage() {
           <CardTitle>How are you feeling?</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+          <div className="flex items-center gap-2 overflow-x-auto pb-3 pl-0.5 pt-0.5">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => {
               const emoji = moodEmojis[score];
               const Icon = emoji.icon;
@@ -70,9 +84,9 @@ export function MoodPage() {
                     setSelectedScore(score);
                     logMutation.mutate(score);
                   }}
-                  className={`flex flex-col items-center gap-1 rounded-lg p-3 transition-all hover:bg-surface-raised ${
-                    selectedScore === score ? 'ring-2 ring-accent bg-surface-raised' : ''
-                  }`}
+                  className={`flex flex-col items-center gap-3 rounded-lg p-3 transition-all hover:bg-surface-raised ${
+                    selectedScore === score ? 'bg-surface-raised' : ''
+                  } outline-none`}
                 >
                   <Icon size={24} style={{ color: emoji.color }} />
                   <span className="text-[10px] text-text-secondary">{emoji.label}</span>

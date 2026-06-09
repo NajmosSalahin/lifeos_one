@@ -20,6 +20,7 @@ export function SleepPage() {
   const { data: logs, isLoading, error, refetch } = useQuery({
     queryKey: queryKeys.sleep.list(),
     queryFn: () => apiClient.get('/sleep').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const createMutation = useMutation({
@@ -29,7 +30,20 @@ export function SleepPage() {
       quality: Math.floor(Math.random() * 3) + 3,
       loggedAt: new Date().toISOString(),
     }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.sleep.all }),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.sleep.all });
+      const previousLogs = queryClient.getQueryData(queryKeys.sleep.list());
+      queryClient.setQueryData(queryKeys.sleep.list(), (old: unknown) => {
+        const optimisticLog = { id: `temp-${Date.now()}`, sleepStart: new Date(Date.now() - 8 * 3600000).toISOString(), sleepEnd: new Date().toISOString(), durationMinutes: 0, quality: Math.floor(Math.random() * 3) + 3, loggedAt: new Date().toISOString() };
+        const logs = Array.isArray(old) ? old : [];
+        return [optimisticLog, ...logs];
+      });
+      return { previousLogs };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousLogs) queryClient.setQueryData(queryKeys.sleep.list(), context.previousLogs);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.sleep.all }),
   });
 
   if (isLoading) return <ListSkeleton />;
@@ -71,7 +85,7 @@ export function SleepPage() {
                     {log.durationMinutes ? `${Math.round(log.durationMinutes / 60 * 10) / 10}h` : 'N/A'}
                   </span>
                   {log.quality && (
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-1">
                       {Array.from({ length: log.quality }).map((_, i) => (
                         <Star key={i} size={12} className="fill-warning text-warning" />
                       ))}

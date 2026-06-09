@@ -24,16 +24,43 @@ export function JournalPage() {
       if (searchQuery) return apiClient.get(`/journal/search?q=${encodeURIComponent(searchQuery)}`).then(r => r.data.data);
       return apiClient.get('/journal').then(r => r.data.data);
     },
+    staleTime: 30_000,
   });
 
   const favoriteMutation = useMutation({
     mutationFn: (id: string) => apiClient.post(`/journal/${id}/favorite`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.journal.all }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.journal.all });
+      const previousEntries = queryClient.getQueryData(queryKeys.journal.list());
+      queryClient.setQueryData(queryKeys.journal.list(), (old: unknown) => {
+        const entries = Array.isArray(old) ? old : [];
+        return entries.map((e: { id: string; favorited: boolean }) =>
+          e.id === id ? { ...e, favorited: !e.favorited } : e
+        );
+      });
+      return { previousEntries };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousEntries) queryClient.setQueryData(queryKeys.journal.list(), context.previousEntries);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.journal.all }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiClient.delete(`/journal/${id}`),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.journal.all }),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.journal.all });
+      const previousEntries = queryClient.getQueryData(queryKeys.journal.list());
+      queryClient.setQueryData(queryKeys.journal.list(), (old: unknown) => {
+        const entries = Array.isArray(old) ? old : [];
+        return entries.filter((e: { id: string }) => e.id !== id);
+      });
+      return { previousEntries };
+    },
+    onError: (_err, _id, context) => {
+      if (context?.previousEntries) queryClient.setQueryData(queryKeys.journal.list(), context.previousEntries);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.journal.all }),
   });
 
   if (isLoading) return <ListSkeleton />;
@@ -75,7 +102,7 @@ export function JournalPage() {
                   {entry.title}
                   {entry.favorited && <Heart size={14} className="fill-error text-error" />}
                 </CardTitle>
-                <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                   <button onClick={() => favoriteMutation.mutate(entry.id)} className="p-1 rounded hover:bg-surface">
                     <Heart size={14} className={entry.favorited ? 'fill-error text-error' : 'text-text-disabled'} />
                   </button>

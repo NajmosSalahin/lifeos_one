@@ -54,6 +54,7 @@ export function SettingsPage() {
   const { data: prefs } = useQuery({
     queryKey: queryKeys.user.preferences(),
     queryFn: () => apiClient.get('/user/preferences').then(r => r.data.data),
+    staleTime: 30_000,
   });
 
   const profileForm = useForm<ProfileForm>({
@@ -87,7 +88,7 @@ export function SettingsPage() {
       <h1 className="text-2xl font-bold text-text-primary">Settings</h1>
 
       <div className="flex gap-6">
-        <div className="hidden w-48 space-y-1 sm:block">
+        <div className="hidden w-48 space-y-3 sm:block">
           {tabs.map((tab) => (
             <SettingsTab key={tab.id} label={tab.label} icon={tab.icon} active={activeTab === tab.id} onClick={() => setActiveTab(tab.id)} />
           ))}
