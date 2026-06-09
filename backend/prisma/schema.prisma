@@ -1,0 +1,287 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum HabitFrequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  ARCHIVED
+  ON_HOLD
+}
+
+enum DensityMode {
+  COMPACT
+  COMFORTABLE
+  SPACIOUS
+}
+
+enum ActivityLevel {
+  SEDENTARY
+  LIGHT
+  MODERATE
+  ACTIVE
+  VERY_ACTIVE
+}
+
+enum HydrationUnit {
+  ML
+  OZ
+}
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  avatarUrl     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  preferences        UserPreferences?
+  habits             Habit[]
+  habitLogs          HabitLog[]
+  moodLogs           MoodLog[]
+  sleepLogs          SleepLog[]
+  hydrationLogs      HydrationLog[]
+  drinkTemplates     DrinkTemplate[]
+  journalEntries     JournalEntry[]
+  breathingSessions  BreathingSession[]
+  breathingTechniques BreathingTechnique[]
+  goals              Goal[]
+  notifications      Notification[]
+}
+
+model UserPreferences {
+  userId           String       @id
+  theme            String       @default("dark")
+  font             String       @default("inter")
+  fontSize         Int          @default(15)
+  densityMode      DensityMode  @default(COMFORTABLE)
+  accentColor      String       @default("#6366f1")
+  sidebarWidth     Int          @default(260)
+  sidebarCollapsed Boolean      @default(false)
+  dashboardLayout  Json?
+  reducedMotion    Boolean      @default(false)
+  highContrast     Boolean      @default(false)
+  heightCm         Float?
+  weightKg         Float?
+  activityLevel    ActivityLevel? @map("activity_level")
+  hydrationUnit    HydrationUnit @default(ML)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Habit {
+  id           String         @id @default(cuid())
+  userId       String
+  name         String
+  description  String?
+  category     String?
+  color        String         @default("#6366f1")
+  icon         String?
+  frequency    HabitFrequency @default(DAILY)
+  targetDays   Int[]
+  reminderTime String?
+  archived     Boolean        @default(false)
+  archivedAt   DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs HabitLog[]
+
+  @@index([userId])
+}
+
+model HabitLog {
+  id          String   @id @default(cuid())
+  habitId     String
+  userId      String
+  completedAt DateTime
+  note        String?
+  createdAt   DateTime @default(now())
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, completedAt])
+  @@index([userId, completedAt])
+}
+
+model MoodLog {
+  id        String   @id @default(cuid())
+  userId    String
+  score     Int
+  note      String?
+  loggedAt  DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loggedAt])
+}
+
+model SleepLog {
+  id              String   @id @default(cuid())
+  userId          String
+  sleepStart      DateTime
+  sleepEnd        DateTime
+  durationMinutes Int?
+  quality         Int?
+  note            String?
+  loggedAt        DateTime
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, loggedAt])
+}
+
+model HydrationLog {
+  id             String   @id @default(cuid())
+  userId         String
+  amount         Float
+  drinkTemplateId String? @map("drink_template_id")
+  note           String?
+  loggedAt       DateTime
+  createdAt      DateTime @default(now())
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  drinkTemplate DrinkTemplate? @relation(fields: [drinkTemplateId], references: [id])
+
+  @@index([userId, loggedAt])
+}
+
+model DrinkTemplate {
+  id                  String   @id @default(cuid())
+  userId              String
+  name                String
+  amount              Float
+  hydrationCoefficient Float  @default(1.0) @map("hydration_coefficient")
+  icon                String?
+  color               String   @default("#3b82f6")
+  isDefault           Boolean  @default(false)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  hydrationLogs  HydrationLog[]
+
+  @@index([userId])
+}
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  content   String
+  tags      String[]
+  category  String?
+  favorited Boolean  @default(false)
+  wordCount Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([title, content], type: BTree)
+}
+
+model BreathingTechnique {
+  id              String   @id @default(cuid())
+  userId          String?
+  name            String
+  description     String?
+  inhaleDuration  Int      @default(4)
+  holdInDuration  Int      @default(4)
+  exhaleDuration  Int      @default(4)
+  holdOutDuration Int      @default(4)
+  cycles          Int      @default(10)
+  isBuiltIn       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user     User?              @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  sessions BreathingSession[]
+
+}
+
+model BreathingSession {
+  id               String   @id @default(cuid())
+  userId           String
+  techniqueId      String
+  durationSeconds  Int
+  cyclesCompleted  Int
+  note             String?
+  completedAt      DateTime
+  createdAt        DateTime @default(now())
+
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  technique BreathingTechnique @relation(fields: [techniqueId], references: [id])
+
+  @@index([userId, completedAt])
+}
+
+model Goal {
+  id          String     @id @default(cuid())
+  userId      String
+  title       String
+  description String?
+  status      GoalStatus @default(ACTIVE)
+  progress    Float      @default(0)
+  deadline    DateTime?
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  milestones GoalMilestone[]
+
+  @@index([userId])
+}
+
+model GoalMilestone {
+  id          String   @id @default(cuid())
+  goalId      String
+  title       String
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  goal Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  @@index([goalId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  body      String?
+  read      Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read, createdAt])
+}
