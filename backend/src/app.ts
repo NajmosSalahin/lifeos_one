@@ -1,4 +1,5 @@
 import path from 'path';
+import fs from 'fs';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -45,10 +46,14 @@ app.use('/api/v1/notifications', authMiddleware, notificationsRouter);
 
 app.get('/health', (_req, res) => { res.json({ success: true, data: { status: 'ok' } }); });
 
-if (env.NODE_ENV === 'production') {
-  const frontendDist = path.resolve(__dirname, '../../frontend/dist');
+const frontendDist = path.resolve(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDist)) {
   app.use(express.static(frontendDist));
   app.get('*', (_req, res) => { res.sendFile(path.join(frontendDist, 'index.html')); });
+} else if (env.NODE_ENV !== 'production') {
+  app.get('/', (_req, res) => {
+    res.send('LifeOS API is running. Start the frontend dev server with: cd frontend && npm run dev');
+  });
 }
 
 app.use(errorMiddleware);
