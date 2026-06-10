@@ -24,8 +24,8 @@ const profileSchema = z.object({
 type ProfileForm = z.infer<typeof profileSchema>;
 
 const healthSchema = z.object({
-  heightCm: z.coerce.number().positive().optional().nullable(),
-  weightKg: z.coerce.number().positive().optional().nullable(),
+  heightCm: z.union([z.number(), z.null()]).optional(),
+  weightKg: z.union([z.number(), z.null()]).optional(),
   activityLevel: z.enum(['SEDENTARY', 'LIGHT', 'MODERATE', 'ACTIVE', 'VERY_ACTIVE']).optional(),
 });
 

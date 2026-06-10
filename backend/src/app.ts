@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -43,6 +44,12 @@ app.use('/api/v1/exports', authMiddleware, exportsRouter);
 app.use('/api/v1/notifications', authMiddleware, notificationsRouter);
 
 app.get('/health', (_req, res) => { res.json({ success: true, data: { status: 'ok' } }); });
+
+if (env.NODE_ENV === 'production') {
+  const frontendDist = path.resolve(__dirname, '../../frontend/dist');
+  app.use(express.static(frontendDist));
+  app.get('*', (_req, res) => { res.sendFile(path.join(frontendDist, 'index.html')); });
+}
 
 app.use(errorMiddleware);
 
