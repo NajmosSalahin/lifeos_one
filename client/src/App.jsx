@@ -4,6 +4,7 @@ import { useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import Navbar from './components/layout/Navbar'
 import Sidebar from './components/layout/Sidebar'
+import BottomNav from './components/layout/BottomNav'
 import { LoadingSpinner } from './components/ui/Loaders'
 
 const Landing = lazy(() => import('./pages/Landing'))
@@ -41,7 +42,7 @@ export default function App() {
             onMobileClose={() => setMobileSidebarOpen(false)}
           />
         )}
-        <main className="flex-1 min-w-0 overflow-y-auto">
+        <main className="flex-1 min-w-0 overflow-y-auto pb-16 md:pb-0">
           <div className="max-w-5xl mx-auto px-4 py-6">
             <Suspense fallback={<LoadingSpinner />}>
               <div key={location.pathname} className="page-enter">
@@ -67,6 +68,7 @@ export default function App() {
           </div>
         </main>
       </div>
+      {showNav && <BottomNav />}
     </div>
   )
 }

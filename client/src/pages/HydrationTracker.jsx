@@ -8,6 +8,7 @@ import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { useModal } from '../components/ui/Modal'
 import { IconHydration, IconDelete, IconSettings, IconEdit, IconAdd } from '../utils/icons'
 import { useToast } from '../components/ui/Toast'
+import InfoBar from '../components/ui/InfoBar'
 
 export default function HydrationTracker() {
   const { data: hydrations, loading, add, remove } = useCollection('hydration', { orderBy: { field: 'timestamp', direction: 'desc' } })
@@ -174,6 +175,11 @@ export default function HydrationTracker() {
           ))}
         </div>
       </div>
+      <InfoBar items={[
+        'Goal from weight, height, activity',
+        'Tap drink button = +250ml',
+        'Weather auto-detects location',
+      ]} />
       <Modal isOpen={addDrinkModal.isOpen} onClose={addDrinkModal.close} title="Create Custom Drink">
         <div className="space-y-3">
           <input type="text" placeholder="Template Name" value={newDrink.name} onChange={e => setNewDrink(p => ({ ...p, name: e.target.value }))} className="form-input" />

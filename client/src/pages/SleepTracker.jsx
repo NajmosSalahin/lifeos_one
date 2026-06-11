@@ -3,8 +3,10 @@ import { useCollection } from '../hooks/useFirestore'
 import { todayStr, formatTime } from '../utils/helpers'
 import { calculateSleepDuration, calculateSleepCycles, countCyclesBetween, calculateBedtimeFromCycles } from '../utils/calculations'
 import { LoadingSpinner } from '../components/ui/Loaders'
-import { IconSleep, IconDelete } from '../utils/icons'
+import { IconSleep, IconDelete, IconSettings } from '../utils/icons'
 import { useToast } from '../components/ui/Toast'
+import Modal, { useModal } from '../components/ui/Modal'
+import InfoBar from '../components/ui/InfoBar'
 
 export default function SleepTracker() {
   const { data: sleepLogs, loading, add, remove } = useCollection('sleep', { orderBy: { field: 'timestamp', direction: 'desc' } })
@@ -23,6 +25,7 @@ export default function SleepTracker() {
   const formRef = useRef(null)
   const today = todayStr()
   const toast = useToast()
+  const calcModal = useModal()
 
   const dur = calculateSleepDuration(bedTime, wakeTime, awakeMinutes)
   const todayLogs = sleepLogs?.filter(s => s.date === today) || []
@@ -58,6 +61,7 @@ export default function SleepTracker() {
     if (result) {
       setBedTime(result.bedTime)
       setWakeTime(result.wakeTime)
+      calcModal.close()
       formRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }
@@ -68,55 +72,102 @@ export default function SleepTracker() {
 
   return (
     <div className="space-y-5">
-      <h1 className="page-title">Sleep Tracker</h1>
-      <div ref={formRef} className="card-panel">
-        <div className="section-header">
-          <h2>Log Sleep</h2>
-          <span className="rule" />
-          <span className="stamp">{todayStr()}</span>
-        </div>
-        <div className="flex gap-2 mb-4">
-          <button onClick={() => setType('night')} className={`btn flex-1 ${type === 'night' ? 'btn-primary' : 'btn-secondary'}`}><IconSleep size={16} /> Night Sleep</button>
-          <button onClick={() => setType('nap')} className={`btn flex-1 ${type === 'nap' ? 'btn-primary' : 'btn-secondary'}`}><IconSleep size={16} /> Nap / Rest</button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-          <div>
-            <label className="form-label">Bedtime</label>
-            <input type="time" value={bedTime} onChange={e => setBedTime(e.target.value)} required className="form-input" />
-          </div>
-          <div>
-            <label className="form-label">Wake Time</label>
-            <input type="time" value={wakeTime} onChange={e => setWakeTime(e.target.value)} required className="form-input" />
-          </div>
-          <div>
-            <label className="form-label">Time Awake (mins)</label>
-            <input type="number" min="0" max="720" value={awakeMinutes} onChange={e => setAwakeMinutes(Number(e.target.value))} className="form-input" />
-          </div>
-        </div>
-        <div className="text-center mb-4">
-          <p className="stat-value">{dur.hours > 0 || dur.minutes > 0 ? `${dur.hours}h ${dur.minutes}m` : '—'}</p>
-        </div>
-        <div className="mb-4">
-          <p className="form-label mb-2">Quality</p>
-          <div className="flex gap-2">
-            {['Poor', 'Fair', 'Good', 'Excellent'].map(q => (
-              <button key={q} onClick={() => setQuality(q)} className={`btn btn-sm flex-1 ${quality === q ? 'btn-primary' : 'btn-secondary'}`}>{q}</button>
-            ))}
-          </div>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-          <input type="text" placeholder="The Good (e.g. Deep sleep, good dreams)" value={goodNotes} onChange={e => setGoodNotes(e.target.value)} className="form-input" />
-          <input type="text" placeholder="Problems faced (e.g. Woke up frequently)" value={badNotes} onChange={e => setBadNotes(e.target.value)} className="form-input" />
-        </div>
-        {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
-        <button onClick={handleSave} className="btn btn-primary w-full">Log Sleep</button>
+      <div className="flex items-center justify-between">
+        <h1 className="page-title">Sleep Tracker</h1>
+        <button onClick={calcModal.open} className="btn btn-ghost btn-icon" title="Sleep Cycle Calculator">
+          <IconSettings size={20} />
+        </button>
       </div>
-      <div className="card-panel">
-        <div className="section-header">
-          <h2>Sleep Cycle Calculator</h2>
-          <span className="rule" />
-          <span className="stamp">~90m per cycle</span>
+      <div className="flex flex-col lg:flex-row lg:gap-5">
+        <div className="lg:w-2/3 space-y-5">
+          <div ref={formRef} className="card-panel">
+            <div className="section-header">
+              <h2>Log Sleep</h2>
+              <span className="rule" />
+              <span className="stamp">{todayStr()}</span>
+            </div>
+            <div className="flex gap-2 mb-4">
+              <button onClick={() => setType('night')} className={`btn flex-1 ${type === 'night' ? 'btn-primary' : 'btn-secondary'}`}><IconSleep size={16} /> Night Sleep</button>
+              <button onClick={() => setType('nap')} className={`btn flex-1 ${type === 'nap' ? 'btn-primary' : 'btn-secondary'}`}><IconSleep size={16} /> Nap / Rest</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <div>
+                <label className="form-label">Bedtime</label>
+                <input type="time" value={bedTime} onChange={e => setBedTime(e.target.value)} required className="form-input" />
+              </div>
+              <div>
+                <label className="form-label">Wake Time</label>
+                <input type="time" value={wakeTime} onChange={e => setWakeTime(e.target.value)} required className="form-input" />
+              </div>
+              <div>
+                <label className="form-label">Time Awake (mins)</label>
+                <input type="number" min="0" max="720" value={awakeMinutes} onChange={e => setAwakeMinutes(Number(e.target.value))} className="form-input" />
+              </div>
+            </div>
+            <div className="text-center mb-4">
+              <p className="stat-value">{dur.hours > 0 || dur.minutes > 0 ? `${dur.hours}h ${dur.minutes}m` : '—'}</p>
+            </div>
+            <div className="mb-4">
+              <p className="form-label mb-2">Quality</p>
+              <div className="flex gap-2">
+                {['Poor', 'Fair', 'Good', 'Excellent'].map(q => (
+                  <button key={q} onClick={() => setQuality(q)} className={`btn btn-sm flex-1 ${quality === q ? 'btn-primary' : 'btn-secondary'}`}>{q}</button>
+                ))}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+              <input type="text" placeholder="The Good (e.g. Deep sleep, good dreams)" value={goodNotes} onChange={e => setGoodNotes(e.target.value)} className="form-input" />
+              <input type="text" placeholder="Problems faced (e.g. Woke up frequently)" value={badNotes} onChange={e => setBadNotes(e.target.value)} className="form-input" />
+            </div>
+            {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
+            <button onClick={handleSave} className="btn btn-primary w-full">Log Sleep</button>
+          </div>
+          <div className="card-panel">
+            <h2 className="text-sm font-bold text-app mb-3">How It Works</h2>
+            <ul className="space-y-2 text-xs text-muted">
+              <li className="flex gap-2"><span className="text-primary shrink-0">1.</span> Enter your <strong className="text-app">bedtime</strong> and <strong className="text-app">wake time</strong></li>
+              <li className="flex gap-2"><span className="text-primary shrink-0">2.</span> Add <strong className="text-app">awake minutes</strong> if you woke up during the night</li>
+              <li className="flex gap-2"><span className="text-primary shrink-0">3.</span> Rate your <strong className="text-app">sleep quality</strong> and add notes</li>
+              <li className="flex gap-2"><span className="text-primary shrink-0">4.</span> Use the <strong className="text-app">gear icon</strong> ⚙️ to calculate optimal sleep cycles</li>
+            </ul>
+          </div>
         </div>
+        <div className="lg:w-1/3 space-y-5">
+          <div className="card-panel">
+            <div className="section-header">
+              <h2>Today's Sleep History</h2>
+              <span className="rule" />
+              <span className="stamp">{todayLogs.length} log{todayLogs.length !== 1 ? 's' : ''}</span>
+            </div>
+            {todayLogs.length === 0 && <p className="text-muted text-sm italic">No sleep logged today.</p>}
+            <div className="space-y-0 mt-4">
+              {[...todayLogs].reverse().map(s => (
+                <div key={s.id} className="card-list-item first:pt-0 last:pb-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`data-stamp px-2 py-0.5 rounded-full font-bold ${s.type === 'night' ? 'bg-blue-500/20 text-blue-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
+                      {s.type === 'night' ? 'Night Sleep' : 'Nap Session'}
+                    </span>
+                    <button onClick={async () => { try { await remove(s.id); toast('Entry deleted') } catch { toast('Failed to delete', 'error') } }} className="btn btn-ghost btn-icon text-red-400"><IconDelete /></button>
+                  </div>
+                  <p className="stat-value">{s.hours}h {s.minutes}m</p>
+                  <p className="data-stamp">{s.bedTime} — {s.wakeTime}</p>
+                  {s.awakeMinutes > 0 && <span className="data-stamp text-red-400">(-{s.awakeMinutes}m awake)</span>}
+                  <span className={`ml-2 data-stamp px-2 py-0.5 rounded-full ${s.quality === 'Excellent' ? 'text-green-400' : s.quality === 'Good' ? 'text-blue-400' : s.quality === 'Fair' ? 'text-yellow-400' : 'text-red-400'}`}>{s.quality}</span>
+                  {s.goodNotes && <p className="text-xs text-green-400 mt-1 bg-green-500/5 p-2 rounded">👍 {s.goodNotes}</p>}
+                  {s.badNotes && <p className="text-xs text-red-400 mt-1 bg-red-500/5 p-2 rounded">👎 {s.badNotes}</p>}
+                </div>
+              ))}
+            </div>
+          </div>
+          <InfoBar items={[
+            '~90min sleep cycles',
+            '5-6 cycles optimal',
+            'Enter 2 values → get the 3rd',
+            'Quality: 1-5 rating',
+          ]} />
+        </div>
+      </div>
+      <Modal isOpen={calcModal.isOpen} onClose={calcModal.close} title="Sleep Cycle Calculator">
         <p className="text-xs text-muted mb-4">Each sleep cycle lasts ~90 minutes. The ideal bedtime ensures you wake up at the end of a full cycle.</p>
         <div className="flex gap-1 mb-4 bg-app rounded-lg p-1">
           {[{ id: 1, label: 'Wake + Cycles' }, { id: 2, label: 'Bed + Wake' }, { id: 3, label: 'Bed + Cycles' }].map(m => (
@@ -160,33 +211,7 @@ export default function SleepTracker() {
             <button onClick={applyToSchedule} className="btn btn-primary w-full mt-3">Apply to Schedule</button>
           </div>
         )}
-      </div>
-      <div className="card-panel">
-        <div className="section-header">
-          <h2>Today's Sleep History</h2>
-          <span className="rule" />
-          <span className="stamp">{todayLogs.length} log{todayLogs.length !== 1 ? 's' : ''}</span>
-        </div>
-        {todayLogs.length === 0 && <p className="text-muted text-sm italic">No sleep logged today.</p>}
-        <div className="space-y-0 mt-4">
-          {[...todayLogs].reverse().map(s => (
-            <div key={s.id} className="card-list-item first:pt-0 last:pb-0">
-              <div className="flex items-center justify-between mb-2">
-                <span className={`data-stamp px-2 py-0.5 rounded-full font-bold ${s.type === 'night' ? 'bg-blue-500/20 text-blue-400' : 'bg-yellow-500/20 text-yellow-400'}`}>
-                  {s.type === 'night' ? 'Night Sleep' : 'Nap Session'}
-                </span>
-                <button onClick={async () => { try { await remove(s.id); toast('Entry deleted') } catch { toast('Failed to delete', 'error') } }} className="btn btn-ghost btn-icon text-red-400"><IconDelete /></button>
-              </div>
-              <p className="stat-value">{s.hours}h {s.minutes}m</p>
-              <p className="data-stamp">{s.bedTime} — {s.wakeTime}</p>
-              {s.awakeMinutes > 0 && <span className="data-stamp text-red-400">(-{s.awakeMinutes}m awake)</span>}
-              <span className={`ml-2 data-stamp px-2 py-0.5 rounded-full ${s.quality === 'Excellent' ? 'text-green-400' : s.quality === 'Good' ? 'text-blue-400' : s.quality === 'Fair' ? 'text-yellow-400' : 'text-red-400'}`}>{s.quality}</span>
-              {s.goodNotes && <p className="text-xs text-green-400 mt-1 bg-green-500/5 p-2 rounded">👍 {s.goodNotes}</p>}
-              {s.badNotes && <p className="text-xs text-red-400 mt-1 bg-red-500/5 p-2 rounded">👎 {s.badNotes}</p>}
-            </div>
-          ))}
-        </div>
-      </div>
+      </Modal>
     </div>
   )
 }
