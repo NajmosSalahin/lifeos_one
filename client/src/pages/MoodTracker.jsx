@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useCollection } from '../hooks/useFirestore'
 import { todayStr } from '../utils/helpers'
-import { MOOD_LABELS, moodEmoji } from '../utils/calculations'
+import { moodEmoji } from '../utils/calculations'
+import { MOOD_LABELS } from '../utils/defaults'
 import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { useModal, ConfirmModal } from '../components/ui/Modal'
 

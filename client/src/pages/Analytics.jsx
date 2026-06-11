@@ -12,6 +12,7 @@ export default function Analytics() {
   const { data: habits, loading: hLoad } = useCollection('habits')
   const { data: hydrations, loading: dLoad } = useCollection('hydration')
   const { data: breathing, loading: bLoad } = useCollection('breathing')
+  const { data: journals } = useCollection('journals')
 
   if (mLoad || sLoad || hLoad || dLoad || bLoad) return <LoadingSpinner />
 
@@ -54,7 +55,7 @@ export default function Analytics() {
   const totalSleepHours = sleepLogs?.reduce((sum, s) => sum + (s.hours || 0) + (s.minutes || 0) / 60, 0).toFixed(1) || '0'
   const totalWater = hydrations?.reduce((sum, h) => sum + (h.volume || 0) * (h.multiplier || 1), 0) / 1000 || 0
   const mindfulMins = Math.round((breathing?.reduce((sum, b) => sum + (b.durationSeconds || 0), 0) || 0) / 60)
-  const journalCount = moods?.length || 0
+  const journalCount = journals?.length || 0
 
   return (
     <div className="space-y-6" id="view-analytics">

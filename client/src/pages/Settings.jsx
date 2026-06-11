@@ -1,10 +1,12 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCollection } from '../hooks/useFirestore'
 import { exportCSV, exportMD, exportJSON } from '../utils/export'
 import { LoadingSpinner } from '../components/ui/Loaders'
-import { ConfirmModal, useModal } from '../components/ui/Modal'
+import Modal, { ConfirmModal, useModal } from '../components/ui/Modal'
+import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore'
+import { db } from '../firebase'
 
 export default function Settings() {
   const { profile, updateProfileField } = useAuth()
@@ -14,8 +16,15 @@ export default function Settings() {
   const { data: hydrationLogs } = useCollection('hydration')
   const { data: breathingSessions } = useCollection('breathing')
   const { data: journals } = useCollection('journals')
+  const { data: habits } = useCollection('habits')
+  const { data: customDrinks } = useCollection('customDrinks')
+  const { data: breathingTechniques } = useCollection('breathingTechniques')
+  const { user } = useAuth()
   const importRef = useRef(null)
+  const [importing, setImporting] = useState(false)
+  const [importResult, setImportResult] = useState(null)
   const wipeModal = useModal()
+  const importResultModal = useModal()
 
   function handleExportCSV() {
     exportCSV(moods, sleepLogs, hydrationLogs, breathingSessions)
@@ -26,7 +35,7 @@ export default function Settings() {
   }
 
   function handleExportJSON() {
-    const state = { moods, sleepLogs, hydrationLogs, breathingSessions, journals }
+    const state = { moods, sleepLogs, hydrationLogs, breathingSessions, journals, habits, customDrinks, breathingTechniques }
     exportJSON(state)
   }
 
@@ -42,25 +51,49 @@ export default function Settings() {
     }
   }
 
-  function handleImport(e) {
+  async function handleImport(e) {
     const file = e.target.files?.[0]
     if (!file) return
+    setImporting(true)
     const reader = new FileReader()
     reader.onload = async (evt) => {
       try {
         const data = JSON.parse(evt.target.result)
-        if (typeof data !== 'object' || !Array.isArray(data.habits)) throw new Error('Invalid format')
-        // In a full implementation, we'd restore to Firestore
-        alert('Import successful! Reload the app.')
+        if (typeof data !== 'object') throw new Error('Invalid format')
+        const collections = ['moods', 'sleepLogs', 'hydrationLogs', 'breathingSessions', 'journals', 'habits', 'customDrinks', 'breathingTechniques']
+        const collectionMap = { sleepLogs: 'sleep', hydrationLogs: 'hydration', breathingSessions: 'breathing', customDrinks: 'customDrinks', breathingTechniques: 'breathingTechniques' }
+        let total = 0
+        for (const key of collections) {
+          const items = data[key]
+          if (!Array.isArray(items)) continue
+          const path = collectionMap[key] || key
+          for (const item of items) {
+            const ref = doc(db, 'users', user.uid, path, item.id)
+            await setDoc(ref, item, { merge: true })
+            total++
+          }
+        }
+        setImportResult(`Restored ${total} documents from backup. Reload to see your data.`)
+        importResultModal.open()
       } catch {
-        alert('Import Failed: Invalid backup file.')
+        setImportResult('Import Failed: The file format is invalid.')
+        importResultModal.open()
       }
     }
     reader.readAsText(file)
     e.target.value = ''
+    setImporting(false)
   }
 
-  function executeFactoryReset() {
+  async function executeFactoryReset() {
+    const paths = ['moods', 'habits', 'sleep', 'hydration', 'journals', 'breathing', 'customDrinks', 'breathingTechniques']
+    for (const path of paths) {
+      const ref = collection(db, 'users', user.uid, path)
+      const snap = await getDocs(ref)
+      const deletes = snap.docs.map(d => deleteDoc(doc(db, 'users', user.uid, path, d.id)))
+      await Promise.all(deletes)
+    }
+    await deleteDoc(doc(db, 'users', user.uid))
     localStorage.removeItem('omniTrackerState')
     window.location.reload()
   }
@@ -81,7 +114,7 @@ export default function Settings() {
         </div>
         <div>
           <label className="inline-block p-3 rounded-lg border border-dashed border-app text-app hover:bg-app transition text-sm font-bold cursor-pointer">
-            📥 Import JSON Backup
+            {importing ? '⏳ Importing...' : '📥 Import JSON Backup'}
             <input ref={importRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
           </label>
         </div>
@@ -115,6 +148,9 @@ export default function Settings() {
         <button onClick={wipeModal.open} className="px-6 py-3 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 transition">Wipe All Data</button>
       </div>
       <ConfirmModal isOpen={wipeModal.isOpen} onClose={wipeModal.close} onConfirm={executeFactoryReset} title="Wipe All Data" message="This will permanently delete ALL your data. This action cannot be undone!" confirmText="Wipe Everything" danger />
+      <Modal isOpen={importResultModal.isOpen} onClose={importResultModal.close} title="Import">
+        <p className="text-app text-sm">{importResult}</p>
+      </Modal>
     </div>
   )
 }

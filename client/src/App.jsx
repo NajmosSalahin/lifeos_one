@@ -1,22 +1,24 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import Navbar from './components/layout/Navbar'
-import Landing from './pages/Landing'
-import Login from './pages/auth/Login'
-import Register from './pages/auth/Register'
-import ForgotPassword from './pages/auth/ForgotPassword'
-import Dashboard from './pages/Dashboard'
-import MoodTracker from './pages/MoodTracker'
-import HabitTracker from './pages/HabitTracker'
-import SleepTracker from './pages/SleepTracker'
-import HydrationTracker from './pages/HydrationTracker'
-import Breathing from './pages/Breathing'
-import Journal from './pages/Journal'
-import Analytics from './pages/Analytics'
-import Calendar from './pages/Calendar'
-import Settings from './pages/Settings'
 import { LoadingSpinner } from './components/ui/Loaders'
+
+const Landing = lazy(() => import('./pages/Landing'))
+const Login = lazy(() => import('./pages/auth/Login'))
+const Register = lazy(() => import('./pages/auth/Register'))
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const MoodTracker = lazy(() => import('./pages/MoodTracker'))
+const HabitTracker = lazy(() => import('./pages/HabitTracker'))
+const SleepTracker = lazy(() => import('./pages/SleepTracker'))
+const HydrationTracker = lazy(() => import('./pages/HydrationTracker'))
+const Breathing = lazy(() => import('./pages/Breathing'))
+const Journal = lazy(() => import('./pages/Journal'))
+const Analytics = lazy(() => import('./pages/Analytics'))
+const Calendar = lazy(() => import('./pages/Calendar'))
+const Settings = lazy(() => import('./pages/Settings'))
 
 export default function App() {
   const { user, loading } = useAuth()
@@ -27,6 +29,7 @@ export default function App() {
     <div className="min-h-screen bg-app">
       <Navbar />
       <main className="max-w-6xl mx-auto px-4 py-6">
+        <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
           <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
@@ -44,6 +47,7 @@ export default function App() {
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
+        </Suspense>
       </main>
     </div>
   )
