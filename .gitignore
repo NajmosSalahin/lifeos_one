@@ -1,5 +1,3 @@
-node_modules/
-dist/
-.env
-*.log
-.DS_Store
+node_modules
+.opencode
+zenith-tracker-fff26-firebase-adminsdk-fbsvc-345cb409b0.json

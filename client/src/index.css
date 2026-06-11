@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #1a1b26;
+  --surface: #24283b;
+  --border: #414868;
+  --text-main: #c0caf5;
+  --text-muted: #565f89;
+  --primary: #7aa2f7;
+}
+
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+*::-webkit-scrollbar { width: 6px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+*::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+body {
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  transition: background 0.3s, color 0.3s;
+}
+
+@keyframes fill-glass {
+  from { height: 0%; }
+}
+
+input, textarea, select, button { font-family: inherit; }
+input[type="range"] { accent-color: var(--primary); }
+
+.bg-app { background: var(--bg); }
+.bg-surface { background: var(--surface); }
+.border-app { border-color: var(--border); }
+.text-app { color: var(--text-main); }
+.text-muted { color: var(--text-muted); }
+.text-primary { color: var(--primary); }
+.bg-primary { background: var(--primary); }
+.border-primary { border-color: var(--primary); }
+.ring-primary { --tw-ring-color: var(--primary); }

@@ -1,6 +1,0 @@
-/* All theme definitions are in globals.css as .theme-* classes */
-/* This file exists for potential additional theme overrides */
-
-.theme-transition {
-  transition: background-color 350ms ease, color 350ms ease, border-color 350ms ease, box-shadow 350ms ease;
-}
