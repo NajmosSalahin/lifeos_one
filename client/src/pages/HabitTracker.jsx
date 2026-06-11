@@ -4,6 +4,8 @@ import { todayStr, daysAgo, weekdayAbbr, isToday } from '../utils/helpers'
 import { calculateStreak } from '../utils/calculations'
 import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { useModal, ConfirmModal } from '../components/ui/Modal'
+import { IconCheck, IconSkip, IconPending, IconStreak, IconDelete, IconEdit, IconArchive, IconAdd } from '../utils/icons'
+import { useToast } from '../components/ui/Toast'
 
 export default function HabitTracker() {
   const { data: habits, loading, add, update, remove } = useCollection('habits')
@@ -13,6 +15,7 @@ export default function HabitTracker() {
   const deleteModal = useModal()
   const [selectedHabit, setSelectedHabit] = useState(null)
   const [renameName, setRenameName] = useState('')
+  const toast = useToast()
 
   const today = todayStr()
   const pastDays = Array.from({ length: 6 }, (_, i) => daysAgo(6 - i))
@@ -26,6 +29,7 @@ export default function HabitTracker() {
     if (!name) { setError('Habit name cannot be empty'); return }
     add({ name, archived: false, doneDates: [], skippedDates: [], createdAt: Date.now() })
     setNewName('')
+    toast('Habit created')
   }
 
   function toggleHabitDate(id) {
@@ -60,6 +64,7 @@ export default function HabitTracker() {
   function handleRename() {
     if (selectedHabit) update(selectedHabit.id, { name: renameName.trim() })
     renameModal.close()
+    toast('Habit renamed')
   }
 
   function openDelete(h) {
@@ -70,10 +75,12 @@ export default function HabitTracker() {
   function handleDelete() {
     if (selectedHabit) remove(selectedHabit.id)
     deleteModal.close()
+    toast('Habit deleted')
   }
 
   function toggleArchive(h) {
     update(h.id, { archived: !h.archived })
+    toast(h.archived ? 'Habit restored' : 'Habit archived')
   }
 
   function getDayStatus(h, dateStr) {
@@ -85,33 +92,33 @@ export default function HabitTracker() {
   if (loading) return <LoadingSpinner />
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-app">Habit Tracker</h1>
-      <div className="bg-surface border border-app rounded-xl p-4">
+    <div className="space-y-5">
+      <h1 className="page-title">Habit Tracker</h1>
+      <div className="card-panel">
         <div className="flex gap-2">
-          <input type="text" placeholder="New habit name..." value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAdd()} className="flex-1 px-4 py-2 rounded-lg bg-app border border-app text-app placeholder-muted focus:outline-none focus:border-primary transition" />
-          <button onClick={handleAdd} className="px-4 py-2 rounded-lg bg-primary text-white font-bold hover:opacity-90 transition">+ Add</button>
+          <input type="text" placeholder="New habit name..." value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAdd()} className="form-input flex-1" />
+          <button onClick={handleAdd} className="btn btn-primary"><IconAdd size={16} /> Add</button>
         </div>
         {error && <p className="text-red-400 text-xs mt-2">{error}</p>}
       </div>
       {activeHabits.map(h => {
         const streak = calculateStreak(h.doneDates || [], h.skippedDates || [])
         return (
-          <div key={h.id} className="bg-surface border border-app rounded-xl p-4">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-bold text-app">{h.name}</h3>
+          <div key={h.id} className="card-panel">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg text-app">{h.name}</h3>
               <div className="flex gap-1">
-                <button onClick={() => toggleArchive(h)} className="text-xs text-muted hover:text-app px-2 py-1">📦</button>
-                <button onClick={() => openRename(h)} className="text-xs text-muted hover:text-app px-2 py-1">✏️</button>
-                <button onClick={() => openDelete(h)} className="text-xs text-red-400 hover:text-red-300 px-2 py-1">🗑️</button>
+                <button onClick={() => toggleArchive(h)} className="btn btn-ghost btn-icon"><IconArchive /></button>
+                <button onClick={() => openRename(h)} className="btn btn-ghost btn-icon"><IconEdit /></button>
+                <button onClick={() => openDelete(h)} className="btn btn-ghost btn-icon text-red-400 hover:text-red-300"><IconDelete /></button>
               </div>
             </div>
-            {streak > 0 && <p className="text-sm text-orange-400 mb-2">🔥 {streak} Streak</p>}
+            {streak > 0 && <p className="text-sm text-orange-400 mb-3 flex items-center gap-1"><IconStreak size={16} /> {streak} Streak</p>}
             <div className="grid grid-cols-7 gap-1">
               {weekDays.map((d, i) => {
                 const status = getDayStatus(h, d)
                 const isT = isToday(d)
-                let cls = 'w-full aspect-square rounded-full text-xs font-bold transition '
+                let cls = 'w-full aspect-square rounded-full text-xs font-bold transition flex items-center justify-center '
                 if (isT) cls += 'bg-primary text-white shadow-md '
                 else if (status === 'done') cls += 'bg-green-500/20 text-green-400 '
                 else if (status === 'skipped') cls += 'bg-yellow-500/20 text-yellow-400 '
@@ -127,7 +134,7 @@ export default function HabitTracker() {
                         else setDayStatus(h.id, d, 'done')
                       }
                     }}>
-                      {status === 'done' ? '✓' : status === 'skipped' ? '−' : '·'}
+                      {status === 'done' ? <IconCheck size={14} /> : status === 'skipped' ? <IconSkip size={14} /> : <IconPending size={14} />}
                     </button>
                     {isT && <p className="text-[10px] text-primary">Today</p>}
                   </div>
@@ -139,24 +146,30 @@ export default function HabitTracker() {
       })}
       {activeHabits.length === 0 && <p className="text-center text-muted italic py-8">No active habits. Add one above!</p>}
       {archivedHabits.length > 0 && (
-        <div className="mt-8">
-          <h2 className="font-bold text-app mb-3">📦 Archived Vault</h2>
-          {archivedHabits.map(h => (
-            <div key={h.id} className="bg-surface border border-app rounded-xl p-3 flex items-center justify-between mb-2">
-              <span className="text-sm text-muted line-through">{h.name}</span>
-              <div className="flex gap-2">
-                <button onClick={() => toggleArchive(h)} className="text-xs text-primary hover:underline">Restore</button>
-                <button onClick={() => openDelete(h)} className="text-xs text-red-400 hover:underline">Drop</button>
+        <div className="card-panel">
+          <div className="section-header">
+            <h2>Archived Vault</h2>
+            <span className="rule" />
+            <span className="stamp">{archivedHabits.length}</span>
+          </div>
+          <div className="space-y-0">
+            {archivedHabits.map(h => (
+              <div key={h.id} className="card-list-item flex items-center justify-between first:pt-0 last:pb-0">
+                <span className="text-sm text-muted line-through">{h.name}</span>
+                <div className="flex gap-2">
+                  <button onClick={() => toggleArchive(h)} className="btn btn-ghost btn-sm text-primary">Restore</button>
+                  <button onClick={() => openDelete(h)} className="btn btn-ghost btn-sm text-red-400">Drop</button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
       <Modal isOpen={renameModal.isOpen} onClose={renameModal.close} title="Rename Habit">
-        <input type="text" value={renameName} onChange={e => setRenameName(e.target.value)} autoFocus className="w-full px-4 py-2 rounded-lg bg-app border border-app text-app focus:outline-none focus:border-primary transition mb-4" onFocus={e => e.target.select()} onKeyDown={e => e.key === 'Enter' && handleRename()} />
+        <input type="text" value={renameName} onChange={e => setRenameName(e.target.value)} autoFocus className="form-input mb-4" onFocus={e => e.target.select()} onKeyDown={e => e.key === 'Enter' && handleRename()} />
         <div className="flex gap-3 justify-end">
-          <button onClick={renameModal.close} className="px-4 py-2 rounded-lg border border-app text-app">Cancel</button>
-          <button onClick={handleRename} className="px-4 py-2 rounded-lg bg-primary text-white font-bold">Save</button>
+          <button onClick={renameModal.close} className="btn btn-secondary">Cancel</button>
+          <button onClick={handleRename} className="btn btn-primary">Save</button>
         </div>
       </Modal>
       <ConfirmModal isOpen={deleteModal.isOpen} onClose={deleteModal.close} onConfirm={handleDelete} title="Delete Habit" message={`Permanently delete "${selectedHabit?.name}" and all its history?`} confirmText="Delete" danger />

@@ -7,6 +7,8 @@ import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { ConfirmModal, useModal } from '../components/ui/Modal'
 import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
+import { IconExport, IconImport, IconTheme } from '../utils/icons'
+import { useToast } from '../components/ui/Toast'
 
 export default function Settings() {
   const { profile, updateProfileField } = useAuth()
@@ -25,6 +27,7 @@ export default function Settings() {
   const [importResult, setImportResult] = useState(null)
   const wipeModal = useModal()
   const importResultModal = useModal()
+  const toast = useToast()
 
   function handleExportCSV() {
     exportCSV(moods, sleepLogs, hydrationLogs, breathingSessions)
@@ -75,9 +78,11 @@ export default function Settings() {
         }
         setImportResult(`Restored ${total} documents from backup. Reload to see your data.`)
         importResultModal.open()
+        toast('Data restored successfully!')
       } catch {
         setImportResult('Import Failed: The file format is invalid.')
         importResultModal.open()
+        toast('Import failed', 'error')
       }
     }
     reader.readAsText(file)
@@ -102,25 +107,33 @@ export default function Settings() {
   const themeEntries = Object.entries(themes)
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-app">Settings</h1>
-      <div className="bg-surface border border-app rounded-xl p-6">
-        <h2 className="font-bold text-lg text-app mb-4">Data Management</h2>
+    <div className="page-enter space-y-8">
+      <h1 className="page-title">Settings</h1>
+      <div className="card-panel">
+        <div className="section-header">
+          <h2>Data Management</h2>
+          <span className="rule" />
+          <span className="stamp">export / import</span>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <button onClick={handleExportCSV} className="p-3 rounded-lg border border-app text-app hover:bg-app transition text-sm font-bold">📄 Export CSV</button>
-          <button onClick={handleExportMD} className="p-3 rounded-lg border border-app text-app hover:bg-app transition text-sm font-bold">📝 Export MD</button>
-          <button onClick={handleExportPDF} className="p-3 rounded-lg border border-app text-app hover:bg-app transition text-sm font-bold">📕 Export PDF</button>
-          <button onClick={handleExportJSON} className="p-3 rounded-lg border border-app text-app hover:bg-app transition text-sm font-bold">📦 Raw Backup</button>
+          <button onClick={handleExportCSV} className="btn btn-secondary"><IconExport size={16} /> Export CSV</button>
+          <button onClick={handleExportMD} className="btn btn-secondary"><IconExport size={16} /> Export MD</button>
+          <button onClick={handleExportPDF} className="btn btn-secondary"><IconExport size={16} /> Export PDF</button>
+          <button onClick={handleExportJSON} className="btn btn-secondary"><IconExport size={16} /> Raw Backup</button>
         </div>
         <div>
-          <label className="inline-block p-3 rounded-lg border border-dashed border-app text-app hover:bg-app transition text-sm font-bold cursor-pointer">
-            {importing ? '⏳ Importing...' : '📥 Import JSON Backup'}
+          <label className="btn btn-secondary cursor-pointer inline-flex items-center gap-2 border-dashed">
+            {importing ? 'Importing...' : <><IconImport size={16} /> Import JSON Backup</>}
             <input ref={importRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
           </label>
         </div>
       </div>
-      <div className="bg-surface border border-app rounded-xl p-6">
-        <h2 className="font-bold text-lg text-app mb-4">Theme Engine</h2>
+      <div className="card-panel">
+        <div className="section-header">
+          <h2>Theme Engine</h2>
+          <span className="rule" />
+          <span className="stamp"><IconTheme size={14} /> {activeTheme}</span>
+        </div>
         {categories.map(cat => {
           const catThemes = themeEntries.filter(([_, t]) => t.category === cat.name)
           return (
@@ -143,9 +156,13 @@ export default function Settings() {
           )
         })}
       </div>
-      <div className="bg-surface border border-red-500/30 rounded-xl p-6">
-        <h2 className="font-bold text-lg text-red-400 mb-4">Danger Zone</h2>
-        <button onClick={wipeModal.open} className="px-6 py-3 rounded-lg bg-red-600 text-white font-bold hover:bg-red-700 transition">Wipe All Data</button>
+      <div className="card-panel border-red-500/30">
+        <div className="section-header">
+          <h2 className="text-red-400">Danger Zone</h2>
+          <span className="rule" />
+          <span className="stamp text-red-400">irreversible</span>
+        </div>
+        <button onClick={wipeModal.open} className="btn btn-danger">Wipe All Data</button>
       </div>
       <ConfirmModal isOpen={wipeModal.isOpen} onClose={wipeModal.close} onConfirm={executeFactoryReset} title="Wipe All Data" message="This will permanently delete ALL your data. This action cannot be undone!" confirmText="Wipe Everything" danger />
       <Modal isOpen={importResultModal.isOpen} onClose={importResultModal.close} title="Import">

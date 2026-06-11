@@ -3,6 +3,7 @@ import { useCollection } from '../hooks/useFirestore'
 import { getDaysInMonth, getFirstDayOfMonth, toISODate, formatDate, formatMinutes } from '../utils/helpers'
 import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { useModal } from '../components/ui/Modal'
+import { IconChevronLeft, IconChevronRight } from '../utils/icons'
 
 export default function Calendar() {
   const { data: moods, loading: mLoad } = useCollection('moods')
@@ -69,16 +70,17 @@ export default function Calendar() {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-app">Calendar</h1>
-      <div className="bg-surface border border-app rounded-xl p-4">
-        <div className="flex items-center justify-between mb-4">
-          <button onClick={() => changeMonth(-1)} className="text-app hover:text-primary text-xl px-2">◀</button>
-          <h2 className="text-lg font-bold text-app">{monthLabel}</h2>
-          <button onClick={() => changeMonth(1)} className="text-app hover:text-primary text-xl px-2">▶</button>
+    <div className="page-enter space-y-6">
+      <h1 className="page-title">Calendar</h1>
+      <div className="card-panel">
+        <div className="section-header mb-4">
+          <button onClick={() => changeMonth(-1)} className="btn-icon"><IconChevronLeft size={20} /></button>
+          <h2 className="font-display text-lg text-app flex-1 text-center">{monthLabel}</h2>
+          <button onClick={() => changeMonth(1)} className="btn-icon"><IconChevronRight size={20} /></button>
+          <span className="stamp">{year}</span>
         </div>
         <div className="grid grid-cols-7 gap-1 mb-2">
-          {days.map(d => <p key={d} className="text-center text-xs text-muted font-bold py-1">{d}</p>)}
+          {days.map(d => <p key={d} className="text-center data-stamp font-bold py-1">{d}</p>)}
         </div>
         <div className="grid grid-cols-7 gap-1">
           {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
@@ -89,7 +91,7 @@ export default function Calendar() {
             const isT = dateStr === todayStr
             const moodColor = getMoodColor(dateStr)
             const dots = getActivityDots(dateStr)
-            let cls = 'aspect-square rounded-lg text-xs font-bold flex flex-col items-center justify-center transition border '
+            let cls = 'aspect-square rounded-lg text-xs font-bold flex flex-col items-center justify-center transition border cursor-pointer '
             if (isT) cls += 'bg-primary text-white border-primary shadow-md '
             else if (moodColor === 'red') cls += 'bg-red-500/15 text-red-400 border-red-500/30 '
             else if (moodColor === 'yellow') cls += 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30 '
@@ -112,16 +114,31 @@ export default function Calendar() {
         {detailDate && (() => {
           const d = getDayDetail(detailDate)
           return (
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between"><span className="text-muted">Mood Avg</span><span className="text-app font-bold">{d.avgMood ? `${d.avgMood}/10` : 'None'}</span></div>
-              <div className="flex justify-between"><span className="text-muted">Habits Done</span><span className="text-app font-bold">{d.dayHabits.length > 0 ? `${d.dayHabits.length} — ${d.dayHabits.map(h => h.name).join(', ')}` : 'None'}</span></div>
-              <div className="flex justify-between"><span className="text-muted">Sleep Logged</span><span className="text-app font-bold">{d.totalSleepMins > 0 ? formatMinutes(d.totalSleepMins) : 'None'}</span></div>
-              <div className="flex justify-between"><span className="text-muted">Hydration</span><span className="text-app font-bold">{d.totalHydration > 0 ? `${Math.round(d.totalHydration)}ml` : 'None'}</span></div>
-              <div className="flex justify-between"><span className="text-muted">Mindful Time</span><span className="text-app font-bold">{d.totalBreathSecs > 0 ? `${Math.round(d.totalBreathSecs / 60)}m` : 'None'}</span></div>
+            <div className="space-y-1">
+              <div className="card-list-item flex justify-between">
+                <span className="text-muted text-sm">Mood Avg</span>
+                <span className="font-mono font-bold text-sm">{d.avgMood ? `${d.avgMood}/10` : 'None'}</span>
+              </div>
+              <div className="card-list-item flex justify-between">
+                <span className="text-muted text-sm">Habits Done</span>
+                <span className="font-mono font-bold text-sm">{d.dayHabits.length > 0 ? `${d.dayHabits.length} \u2014 ${d.dayHabits.map(h => h.name).join(', ')}` : 'None'}</span>
+              </div>
+              <div className="card-list-item flex justify-between">
+                <span className="text-muted text-sm">Sleep Logged</span>
+                <span className="font-mono font-bold text-sm">{d.totalSleepMins > 0 ? formatMinutes(d.totalSleepMins) : 'None'}</span>
+              </div>
+              <div className="card-list-item flex justify-between">
+                <span className="text-muted text-sm">Hydration</span>
+                <span className="font-mono font-bold text-sm">{d.totalHydration > 0 ? `${Math.round(d.totalHydration)}ml` : 'None'}</span>
+              </div>
+              <div className="card-list-item flex justify-between">
+                <span className="text-muted text-sm">Mindful Time</span>
+                <span className="font-mono font-bold text-sm">{d.totalBreathSecs > 0 ? `${Math.round(d.totalBreathSecs / 60)}m` : 'None'}</span>
+              </div>
               {d.dayJournals.length > 0 && (
-                <div>
-                  <p className="text-muted mb-1">Journals:</p>
-                  {d.dayJournals.map(j => <p key={j.id} className="text-app font-bold">• {j.title || 'Untitled Entry'}</p>)}
+                <div className="pt-3">
+                  <p className="text-muted text-sm mb-1">Journals:</p>
+                  {d.dayJournals.map(j => <p key={j.id} className="text-app font-bold text-sm">\u2022 {j.title || 'Untitled Entry'}</p>)}
                 </div>
               )}
             </div>

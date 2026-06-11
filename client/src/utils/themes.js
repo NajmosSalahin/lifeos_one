@@ -1,4 +1,5 @@
 export const THEMES = {
+  'Parchment': { category: 'Light', bg: '#f4efe6', surface: '#fcf9f5', border: '#e0d6c8', textMain: '#2c2420', textMuted: '#9a8c7e', primary: '#c0392b' },
   'Tokyo Night': { category: 'Dark', bg: '#1a1b26', surface: '#24283b', border: '#414868', textMain: '#c0caf5', textMuted: '#565f89', primary: '#7aa2f7' },
   'Dracula': { category: 'Dark', bg: '#282a36', surface: '#343746', border: '#44475a', textMain: '#f8f8f2', textMuted: '#6272a4', primary: '#bd93f9' },
   'Nord': { category: 'Dark', bg: '#2e3440', surface: '#3b4252', border: '#4c566a', textMain: '#d8dee9', textMuted: '#616e88', primary: '#88c0d0' },
@@ -62,14 +63,26 @@ export const THEMES = {
   'Spacegray': { category: 'Dark', bg: '#1d1f22', surface: '#282a2e', border: '#373b41', textMain: '#c5c8c6', textMuted: '#707880', primary: '#81a2be' },
   'Solarized Dark': { category: 'Dark', bg: '#002b36', surface: '#073642', border: '#12434f', textMain: '#839496', textMuted: '#586e75', primary: '#268bd2' },
   'Rosé Pine Moon': { category: 'Earthy', bg: '#232136', surface: '#2a273f', border: '#393552', textMain: '#e0def4', textMuted: '#908caa', primary: '#c4a7e7' },
-  'Firefly': { category: 'Dark', bg: '#12181b', surface: '#192228', border: '#253036', textMain: '#c9d1d9', textMuted: '#72828b', primary: '#4db6ac' }
+  'Firefly': { category: 'Dark', bg: '#12181b', surface: '#192228', border: '#253036', textMain: '#c9d1d9', textMuted: '#72828b', primary: '#4db6ac' },
+  // Theme Factory Collection
+  'Ocean Depths': { category: 'Studio', bg: '#1a2332', surface: '#1f2d3d', border: '#2a3d52', textMain: '#e6edf0', textMuted: '#8aa0b8', primary: '#2d8b8b' },
+  'Sunset Boulevard': { category: 'Studio', bg: '#264653', surface: '#2d5059', border: '#3d6670', textMain: '#f5e6d0', textMuted: '#c4a88a', primary: '#e76f51' },
+  'Forest Canopy': { category: 'Studio', bg: '#2d4a2b', surface: '#385736', border: '#4a6d46', textMain: '#f5f3ee', textMuted: '#9aad8a', primary: '#7d8c6a' },
+  'Modern Minimalist': { category: 'Studio', bg: '#f5f5f5', surface: '#ffffff', border: '#dce0e3', textMain: '#36454f', textMuted: '#8a959e', primary: '#708090' },
+  'Golden Hour': { category: 'Studio', bg: '#f5efe6', surface: '#fcf7f0', border: '#e8dccc', textMain: '#4a403a', textMuted: '#b8a898', primary: '#c1666b' },
+  'Arctic Frost': { category: 'Studio', bg: '#eef3f7', surface: '#f8fafc', border: '#d4e4f7', textMain: '#2a3a4a', textMuted: '#7a9ab8', primary: '#4a6fa5' },
+  'Desert Rose': { category: 'Studio', bg: '#f5edea', surface: '#fcf7f5', border: '#e8d5c4', textMain: '#3d222e', textMuted: '#b8a090', primary: '#d4a5a5' },
+  'Tech Innovation': { category: 'Studio', bg: '#0d1117', surface: '#161b22', border: '#30363d', textMain: '#e6edf3', textMuted: '#8b949e', primary: '#0066ff' },
+  'Botanical Garden': { category: 'Studio', bg: '#f5f3ed', surface: '#fcfbf8', border: '#e0e8d8', textMain: '#2a3a28', textMuted: '#8aa880', primary: '#4a7c59' },
+  'Midnight Galaxy': { category: 'Studio', bg: '#2b1e3e', surface: '#3a2a52', border: '#4e3a6a', textMain: '#e6e6fa', textMuted: '#a490c2', primary: '#7c6cb0' }
 }
 
 export const THEME_CATEGORIES = [
   { name: 'Dark', icon: '🌙' },
   { name: 'Light', icon: '☀️' },
   { name: 'Colorful', icon: '🎨' },
-  { name: 'Earthy', icon: '🌿' }
+  { name: 'Earthy', icon: '🌿' },
+  { name: 'Studio', icon: '🎭' }
 ]
 
 export function applyTheme(themeName) {

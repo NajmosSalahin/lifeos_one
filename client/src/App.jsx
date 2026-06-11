@@ -1,8 +1,9 @@
-import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense, useState } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/layout/ProtectedRoute'
 import Navbar from './components/layout/Navbar'
+import Sidebar from './components/layout/Sidebar'
 import { LoadingSpinner } from './components/ui/Loaders'
 
 const Landing = lazy(() => import('./pages/Landing'))
@@ -22,33 +23,50 @@ const Settings = lazy(() => import('./pages/Settings'))
 
 export default function App() {
   const { user, loading } = useAuth()
+  const location = useLocation()
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false)
 
   if (loading) return <LoadingSpinner />
 
+  const isAuthPage = ['/', '/login', '/register', '/forgot-password'].includes(location.pathname)
+  const showNav = !isAuthPage && user
+
   return (
-    <div className="min-h-screen bg-app">
-      <Navbar />
-      <main className="max-w-6xl mx-auto px-4 py-6">
-        <Suspense fallback={<LoadingSpinner />}>
-        <Routes>
-          <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
-          <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
-          <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <Register />} />
-          <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} />
-          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/mood" element={<ProtectedRoute><MoodTracker /></ProtectedRoute>} />
-          <Route path="/habits" element={<ProtectedRoute><HabitTracker /></ProtectedRoute>} />
-          <Route path="/sleep" element={<ProtectedRoute><SleepTracker /></ProtectedRoute>} />
-          <Route path="/hydration" element={<ProtectedRoute><HydrationTracker /></ProtectedRoute>} />
-          <Route path="/breathing" element={<ProtectedRoute><Breathing /></ProtectedRoute>} />
-          <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
-          <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
-          <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-        </Suspense>
-      </main>
+    <div className="h-screen overflow-hidden bg-app flex flex-col">
+      {showNav && <Navbar onMenuClick={() => setMobileSidebarOpen(true)} />}
+      <div className="flex-1 flex min-h-0">
+        {showNav && (
+          <Sidebar
+            mobileOpen={mobileSidebarOpen}
+            onMobileClose={() => setMobileSidebarOpen(false)}
+          />
+        )}
+        <main className="flex-1 min-w-0 overflow-y-auto">
+          <div className="max-w-5xl mx-auto px-4 py-6">
+            <Suspense fallback={<LoadingSpinner />}>
+              <div key={location.pathname} className="page-enter">
+                <Routes>
+                  <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
+                  <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />
+                  <Route path="/register" element={user ? <Navigate to="/dashboard" replace /> : <Register />} />
+                  <Route path="/forgot-password" element={user ? <Navigate to="/dashboard" replace /> : <ForgotPassword />} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/mood" element={<ProtectedRoute><MoodTracker /></ProtectedRoute>} />
+                  <Route path="/habits" element={<ProtectedRoute><HabitTracker /></ProtectedRoute>} />
+                  <Route path="/sleep" element={<ProtectedRoute><SleepTracker /></ProtectedRoute>} />
+                  <Route path="/hydration" element={<ProtectedRoute><HydrationTracker /></ProtectedRoute>} />
+                  <Route path="/breathing" element={<ProtectedRoute><Breathing /></ProtectedRoute>} />
+                  <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
+                  <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
+                  <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              </div>
+            </Suspense>
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

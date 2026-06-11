@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { IconMood } from '../../utils/icons'
 
 export default function Register() {
   const { register } = useAuth()
@@ -24,15 +25,28 @@ export default function Register() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center">
-      <div className="bg-surface rounded-xl border border-app p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-app mb-6 text-center">Create Account</h1>
-        {error && <p className="text-red-400 text-sm mb-4 bg-red-500/10 p-3 rounded-lg">{error}</p>}
+      <div className="card p-8 w-full max-w-sm">
+        <div className="flex justify-center mb-4"><IconMood size={40} /></div>
+        <h1 className="page-title text-center">Create Account</h1>
+        {error && <p className="card-stat text-red-400 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} required className="w-full px-4 py-2.5 rounded-lg bg-app border border-app text-app placeholder-muted focus:outline-none focus:border-primary transition" />
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-4 py-2.5 rounded-lg bg-app border border-app text-app placeholder-muted focus:outline-none focus:border-primary transition" />
-          <input type="password" placeholder="Password (6+ chars)" value={password} onChange={e => setPassword(e.target.value)} required className="w-full px-4 py-2.5 rounded-lg bg-app border border-app text-app placeholder-muted focus:outline-none focus:border-primary transition" />
-          <input type="password" placeholder="Confirm Password" value={confirm} onChange={e => setConfirm(e.target.value)} required className="w-full px-4 py-2.5 rounded-lg bg-app border border-app text-app placeholder-muted focus:outline-none focus:border-primary transition" />
-          <button type="submit" disabled={loading} className="w-full py-2.5 rounded-lg bg-primary text-white font-bold hover:opacity-90 transition disabled:opacity-50">Create Account</button>
+          <div>
+            <label className="form-label">Full Name</label>
+            <input type="text" placeholder="Full Name" value={name} onChange={e => setName(e.target.value)} required className="form-input" />
+          </div>
+          <div>
+            <label className="form-label">Email</label>
+            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required className="form-input" />
+          </div>
+          <div>
+            <label className="form-label">Password</label>
+            <input type="password" placeholder="Password (6+ chars)" value={password} onChange={e => setPassword(e.target.value)} required className="form-input" />
+          </div>
+          <div>
+            <label className="form-label">Confirm Password</label>
+            <input type="password" placeholder="Confirm Password" value={confirm} onChange={e => setConfirm(e.target.value)} required className="form-input" />
+          </div>
+          <button type="submit" disabled={loading} className="btn btn-primary w-full">Create Account</button>
         </form>
         <p className="mt-4 text-center text-sm text-muted">Already have an account? <Link to="/login" className="text-primary hover:underline">Sign in</Link></p>
       </div>

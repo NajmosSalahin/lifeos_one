@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { IconMood, IconCheck } from '../../utils/icons'
 
 export default function ForgotPassword() {
   const { resetPassword } = useAuth()
@@ -17,8 +18,9 @@ export default function ForgotPassword() {
 
   if (sent) return (
     <div className="min-h-[80vh] flex items-center justify-center">
-      <div className="bg-surface rounded-xl border border-app p-8 w-full max-w-md text-center">
-        <p className="text-green-400 text-lg font-bold mb-2">✓ Email Sent</p>
+      <div className="card p-8 w-full max-w-sm text-center">
+        <div className="flex justify-center mb-4"><IconCheck size={40} className="text-green-400" /></div>
+        <p className="text-green-400 text-lg font-bold mb-2">Email Sent</p>
         <p className="text-muted text-sm mb-4">Check your inbox for password reset instructions.</p>
         <Link to="/login" className="text-primary hover:underline">Back to Login</Link>
       </div>
@@ -27,12 +29,16 @@ export default function ForgotPassword() {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center">
-      <div className="bg-surface rounded-xl border border-app p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-app mb-6 text-center">Reset Password</h1>
-        {error && <p className="text-red-400 text-sm mb-4 bg-red-500/10 p-3 rounded-lg">{error}</p>}
+      <div className="card p-8 w-full max-w-sm">
+        <div className="flex justify-center mb-4"><IconMood size={40} /></div>
+        <h1 className="page-title text-center">Reset Password</h1>
+        {error && <p className="card-stat text-red-400 text-sm mb-4">{error}</p>}
         <form onSubmit={handleSubmit} className="space-y-4">
-          <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} required className="w-full px-4 py-2.5 rounded-lg bg-app border border-app text-app placeholder-muted focus:outline-none focus:border-primary transition" />
-          <button type="submit" className="w-full py-2.5 rounded-lg bg-primary text-white font-bold hover:opacity-90 transition">Send Reset Link</button>
+          <div>
+            <label className="form-label">Email</label>
+            <input type="email" placeholder="Email address" value={email} onChange={e => setEmail(e.target.value)} required className="form-input" />
+          </div>
+          <button type="submit" className="btn btn-primary w-full">Send Reset Link</button>
         </form>
         <p className="mt-4 text-center text-sm text-muted"><Link to="/login" className="text-primary hover:underline">Back to Login</Link></p>
       </div>

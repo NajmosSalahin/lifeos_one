@@ -1,12 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #1a1b26;
-  --surface: #24283b;
-  --border: #414868;
-  --text-main: #c0caf5;
-  --text-muted: #565f89;
-  --primary: #7aa2f7;
+  --bg: #f4efe6;
+  --surface: #fcf9f5;
+  --border: #e0d6c8;
+  --text-main: #2c2420;
+  --text-muted: #9a8c7e;
+  --primary: #c0392b;
+
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
@@ -18,7 +22,7 @@
 body {
   background: var(--bg);
   color: var(--text-main);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-body);
   margin: 0;
   transition: background 0.3s, color 0.3s;
 }
@@ -30,6 +34,7 @@ body {
 input, textarea, select, button { font-family: inherit; }
 input[type="range"] { accent-color: var(--primary); }
 
+/* Theme variable utility classes */
 .bg-app { background: var(--bg); }
 .bg-surface { background: var(--surface); }
 .border-app { border-color: var(--border); }
@@ -39,3 +44,72 @@ input[type="range"] { accent-color: var(--primary); }
 .bg-primary { background: var(--primary); }
 .border-primary { border-color: var(--primary); }
 .ring-primary { --tw-ring-color: var(--primary); }
+
+/* Typography system */
+.font-display { font-family: var(--font-display); }
+.font-mono { font-family: var(--font-mono); }
+
+/* Card hierarchy */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+.card-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px; }
+.card-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
+.card-list-item { border-bottom: 1px solid var(--border); padding: 12px 0; }
+.card-list-item:last-child { border-bottom: none; }
+
+/* Data stamp */
+.data-stamp { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--text-muted); letter-spacing: 0.02em; }
+
+/* Section header with rule */
+.section-header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 16px; }
+.section-header h2 { font-family: var(--font-display); font-size: 1.25rem; color: var(--text-main); font-weight: 400; line-height: 1.3; }
+.section-header .rule { flex: 1; height: 1px; background: var(--border); min-width: 24px; }
+.section-header .stamp { font-family: var(--font-mono); font-size: 0.6875rem; color: var(--text-muted); white-space: nowrap; }
+
+/* Page title */
+.page-title { font-family: var(--font-display); font-size: 1.75rem; color: var(--text-main); font-weight: 400; line-height: 1.2; margin-bottom: 24px; }
+
+/* Stat value */
+.stat-value { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 500; color: var(--text-main); line-height: 1.1; }
+.stat-label { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase; }
+
+/* Form elements */
+.form-input { width: 100%; padding: 10px 14px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); color: var(--text-main); font-size: 0.875rem; transition: border-color 0.2s; }
+.form-input:focus { outline: none; border-color: var(--primary); }
+.form-input::placeholder { color: var(--text-muted); opacity: 0.6; }
+.form-label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; letter-spacing: 0.02em; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 20px; border-radius: 10px; font-size: 0.875rem; font-weight: 600; transition: all 0.15s; cursor: pointer; border: none; }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { opacity: 0.9; transform: scale(0.98); }
+.btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-main); }
+.btn-secondary:hover { background: var(--surface); }
+.btn-ghost { background: transparent; color: var(--text-muted); padding: 6px 10px; border-radius: 8px; }
+.btn-ghost:hover { background: var(--border); color: var(--text-main); }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-danger:hover { opacity: 0.9; transform: scale(0.98); }
+.btn-sm { padding: 6px 12px; font-size: 0.75rem; border-radius: 8px; }
+.btn-icon { padding: 6px; border-radius: 8px; line-height: 1; }
+
+/* Page transition */
+.page-enter { animation: pageIn 0.25s ease-out both; }
+@keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* Stagger children */
+.stagger > * { animation: fadeUp 0.3s ease-out both; }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 40ms; }
+.stagger > *:nth-child(3) { animation-delay: 80ms; }
+.stagger > *:nth-child(4) { animation-delay: 120ms; }
+.stagger > *:nth-child(5) { animation-delay: 160ms; }
+
+/* Toast */
+.toast-enter { animation: toastIn 0.3s ease-out both; }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+.toast-exit { animation: toastOut 0.2s ease-in both; }
+@keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-12px); } }
+
+@layer utilities {
+  .inset-10 { inset: calc(var(--spacing) * 16); }
+}

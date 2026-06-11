@@ -26,7 +26,7 @@ export const DEFAULT_PROFILE = {
   activityLevel: 1.2,
   temp: 22,
   humidity: 50,
-  theme: 'Tokyo Night'
+  theme: 'Parchment'
 }
 
 export const ACTIVITY_OPTIONS = [

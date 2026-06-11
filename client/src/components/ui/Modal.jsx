@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
 
-export default function Modal({ isOpen, onClose, title, children }) {
+export default function Modal({ isOpen, onClose, title, children, className = '', cardClassName = '' }) {
   if (!isOpen) return null
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onClose}>
-      <div className="bg-surface rounded-xl border border-app shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+    <div className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 ${className}`} onClick={onClose}>
+      <div className={`bg-surface rounded-xl border border-app shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto ${cardClassName}`} onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between p-4 border-b border-app">
           <h2 className="text-lg font-bold text-app">{title}</h2>
           <button onClick={onClose} className="text-muted hover:text-app text-xl leading-none">&times;</button>
