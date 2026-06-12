@@ -179,6 +179,12 @@ export default function Breathing() {
           </div>
         </div>
       </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted items-center">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary"></span> Inhale</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/40"></span> Hold</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary"></span> Exhale</span>
+        <span className="flex items-center gap-1"><IconAdd size={10} /> Custom technique</span>
+      </div>
       <Modal isOpen={selectModal.isOpen} onClose={selectModal.close} title="Select Technique" className="" cardClassName="-translate-x-24">
         <div className="space-y-1 max-h-64 overflow-y-auto">
           {techniques?.map(t => (

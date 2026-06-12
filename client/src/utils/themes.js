@@ -78,11 +78,11 @@ export const THEMES = {
 }
 
 export const THEME_CATEGORIES = [
-  { name: 'Dark', icon: '🌙' },
-  { name: 'Light', icon: '☀️' },
-  { name: 'Colorful', icon: '🎨' },
-  { name: 'Earthy', icon: '🌿' },
-  { name: 'Studio', icon: '🎭' }
+  { name: 'Dark', icon: 'moon' },
+  { name: 'Light', icon: 'sun' },
+  { name: 'Colorful', icon: 'palette' },
+  { name: 'Earthy', icon: 'leaf' },
+  { name: 'Studio', icon: 'sparkle' }
 ]
 
 export function applyTheme(themeName) {

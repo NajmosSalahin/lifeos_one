@@ -21,6 +21,7 @@ const Journal = lazy(() => import('./pages/Journal'))
 const Analytics = lazy(() => import('./pages/Analytics'))
 const Calendar = lazy(() => import('./pages/Calendar'))
 const Settings = lazy(() => import('./pages/Settings'))
+const Profile = lazy(() => import('./pages/Profile'))
 
 export default function App() {
   const { user, loading } = useAuth()
@@ -60,6 +61,7 @@ export default function App() {
                   <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
                   <Route path="/analytics" element={<ProtectedRoute><Analytics /></ProtectedRoute>} />
                   <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                   <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

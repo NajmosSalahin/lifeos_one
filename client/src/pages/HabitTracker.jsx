@@ -6,7 +6,6 @@ import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { useModal, ConfirmModal } from '../components/ui/Modal'
 import { IconStreak, IconDelete, IconEdit, IconArchive, IconAdd } from '../utils/icons'
 import { useToast } from '../components/ui/Toast'
-import InfoBar from '../components/ui/InfoBar'
 
 export default function HabitTracker() {
   const { data: habits, loading, add, update, remove } = useCollection('habits')
@@ -253,12 +252,16 @@ export default function HabitTracker() {
           )}
         </div>
       </div>
-      <InfoBar items={[
-        <><span>Edit: goal 1-7/week, freeze: skip streak (1-7/week)</span></>,
-        <><IconEdit size={10} /><span>rename</span><span className="text-muted/20">/</span><IconArchive size={10} /><span>archive</span><span className="text-muted/20">/</span><IconDelete size={10} /><span>delete</span></>,
-        <><IconStreak size={10} /><span>streak</span></>,
-        <span>● Done  - Skip  ○ Pending</span>,
-      ]} />
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted items-center">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"></span> Done</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full border border-muted/30 flex items-center justify-center text-[8px] leading-none text-muted">–</span> Skipped</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted/25 border border-muted/30"></span> Pending</span>
+        <span className="flex items-center gap-1 text-orange-400"><IconStreak size={10} /> Streak</span>
+        <span className="flex items-center gap-1 text-sky-400">❄ Freeze</span>
+        <span className="flex items-center gap-1"><IconEdit size={10} /> Rename</span>
+        <span className="flex items-center gap-1"><IconArchive size={10} /> Archive</span>
+        <span className="flex items-center gap-1"><IconDelete size={10} /> Delete</span>
+      </div>
       <Modal isOpen={renameModal.isOpen} onClose={renameModal.close} title="Edit Habit">
         <label className="text-xs text-muted font-semibold uppercase tracking-wider block mb-1">Name</label>
         <input type="text" value={renameName} onChange={e => setRenameName(e.target.value)} autoFocus className="form-input mb-3" onFocus={e => e.target.select()} onKeyDown={e => e.key === 'Enter' && handleRename()} />

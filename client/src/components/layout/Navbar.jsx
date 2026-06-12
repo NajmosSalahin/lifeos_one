@@ -11,7 +11,7 @@ export default function Navbar({ onMenuClick }) {
   if (!user) return null
 
   return (
-    <nav className="bg-surface border-b border-app px-4 py-2 flex items-center justify-between shrink-0">
+    <nav className="relative bg-surface border-b border-app px-4 py-2 flex items-center justify-between shrink-0">
       <Link to="/dashboard" className="font-display text-lg text-app no-underline">Zenith Tracker</Link>
       <div className="flex items-center gap-2">
         <button onClick={() => setShowProfile(!showProfile)}

@@ -79,6 +79,12 @@ export default function MoodTracker() {
           </div>
         </div>
       </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted items-center">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500/40"></span> Low (1-3)</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500/40"></span> Medium (4-6)</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500/40"></span> High (7-10)</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full border border-muted/30 w-3 h-3 flex items-center justify-center text-[8px]">E</span> Energy</span>
+      </div>
     </div>
   )
 }

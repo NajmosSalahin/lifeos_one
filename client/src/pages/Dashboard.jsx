@@ -142,6 +142,11 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted items-center">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary"></span> Done</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted/40"></span> Skipped</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted/20"></span> Pending</span>
+      </div>
     </div>
   )
 }

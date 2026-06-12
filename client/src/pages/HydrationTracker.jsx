@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCollection } from '../hooks/useFirestore'
 import { useAuth } from '../contexts/AuthContext'
 import { todayStr } from '../utils/helpers'
@@ -8,7 +8,6 @@ import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { useModal } from '../components/ui/Modal'
 import { IconHydration, IconDelete, IconSettings, IconEdit, IconAdd } from '../utils/icons'
 import { useToast } from '../components/ui/Toast'
-import InfoBar from '../components/ui/InfoBar'
 
 export default function HydrationTracker() {
   const { data: hydrations, loading, add, remove } = useCollection('hydration', { orderBy: { field: 'timestamp', direction: 'desc' } })
@@ -20,11 +19,20 @@ export default function HydrationTracker() {
   const manageDrinksModal = useModal()
   const profileModal = useModal()
   const [newDrink, setNewDrink] = useState({ name: '', volume: 250, multiplier: 1.0, icon: 'ph-drop' })
+  const [editingDrinkId, setEditingDrinkId] = useState(null)
+  const [editFields, setEditFields] = useState({ name: '', volume: 250, multiplier: 1.0, icon: 'ph-drop' })
   const [profFields, setProfFields] = useState({
     weight: profile?.weight || 65, height: profile?.height || 170,
     activityLevel: profile?.activityLevel || 1.2, temp: profile?.temp || 22, humidity: profile?.humidity || 50
   })
   const [weatherBtn, setWeatherBtn] = useState('Auto-Detect Weather')
+
+  useEffect(() => {
+    if (profile) setProfFields({
+      weight: profile.weight ?? 65, height: profile.height ?? 170,
+      activityLevel: profile.activityLevel ?? 1.2, temp: profile.temp ?? 22, humidity: profile.humidity ?? 50
+    })
+  }, [profile])
   const toast = useToast()
 
   const today = todayStr()
@@ -75,6 +83,18 @@ export default function HydrationTracker() {
     }
   }
 
+  function startEdit(drink) {
+    setEditFields({ name: drink.name, volume: drink.volume, multiplier: drink.multiplier, icon: drink.icon || '💧' })
+    setEditingDrinkId(drink.id)
+  }
+  async function saveEdit() {
+    if (!editFields.name.trim() || !editFields.volume) return
+    try {
+      await updateDrink(editingDrinkId, { name: editFields.name.trim(), volume: Number(editFields.volume), multiplier: Number(editFields.multiplier), icon: editFields.icon })
+      setEditingDrinkId(null)
+      toast('Drink updated')
+    } catch { toast('Failed to update drink', 'error') }
+  }
   async function handleSaveProfile() {
     try {
       await updateProfileField(profFields)
@@ -105,81 +125,87 @@ export default function HydrationTracker() {
   return (
     <div className="space-y-5">
       <h1 className="page-title">Hydration Tracker</h1>
-      <div className="card-panel">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <p className="stat-label">Goal: {goal}ml</p>
-            <p className="stat-value mt-1">{totalEffective}ml</p>
-          </div>
-          <div className="flex gap-1">
-            <button onClick={profileModal.open} className="btn btn-ghost btn-icon"><IconSettings size={16} /></button>
-            <button onClick={manageDrinksModal.open} className="btn btn-ghost btn-icon"><IconEdit size={16} /></button>
-          </div>
-        </div>
-        <div className="w-full h-4 bg-app rounded-full overflow-hidden mb-2">
-          <div className="h-full bg-primary rounded-full transition-all duration-[800ms] ease-[cubic-bezier(0.4,0,0.2,1)]" style={{ width: `${fillPercent}%` }}></div>
-        </div>
-        <p className="data-stamp text-right">{Math.round(fillPercent)}% of daily goal</p>
-      </div>
-      <div className="card-panel">
-        <div className="section-header">
-          <h2>Quick Add</h2>
-          <span className="rule" />
-          <span className="stamp">manual ml</span>
-        </div>
-        <div className="flex gap-2">
-          <input type="number" placeholder="e.g. 250" min="1" max="5000" value={quickMl} onChange={e => setQuickMl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleQuickAdd()} className="form-input flex-1" />
-          <button onClick={handleQuickAdd} className="btn btn-primary">Log Amount</button>
-        </div>
-        {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
-      </div>
-      <div className="card-panel">
-        <div className="section-header">
-          <h2>1-Click Drinks</h2>
-          <span className="rule" />
-          <span className="stamp">{allDrinks.length} presets</span>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {allDrinks.map((t, i) => (
-            <button key={i} onClick={() => handleTemplateClick(t)} className="flex items-center gap-2 p-3 rounded-xl border border-app hover:border-primary/30 transition group">
-              <IconHydration size={20} className="shrink-0 text-muted group-hover:text-primary transition" />
-              <div className="text-left min-w-0">
-                <p className="text-xs font-bold text-app truncate">{t.name}</p>
-                <p className="data-stamp">{t.volume}ml</p>
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4 lg:gap-6">
+        <div className="flex flex-col gap-5 h-full">
+          <div className="card-panel">
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <div>
+                <p className="stat-label">Goal: {goal}ml</p>
+                <p className="stat-value">{totalEffective}ml</p>
               </div>
-            </button>
-          ))}
-          <button onClick={addDrinkModal.open} className="flex items-center justify-center gap-1 p-3 rounded-xl border-2 border-dashed border-app text-muted hover:border-primary/30 hover:text-app transition">
-            <IconAdd size={16} /> Create Preset
-          </button>
-        </div>
-      </div>
-      <div className="card-panel">
-        <div className="section-header">
-          <h2>Today's Logbook</h2>
-          <span className="rule" />
-          <span className="stamp">{todayHydrations.length} drink{todayHydrations.length !== 1 ? 's' : ''}</span>
-        </div>
-        {todayHydrations.length === 0 && <p className="text-muted text-sm italic">No drinks logged today.</p>}
-        <div className="space-y-0 mt-4">
-          {[...todayHydrations].reverse().map(h => (
-            <div key={h.id} className="card-list-item flex items-center gap-3 first:pt-0 last:pb-0">
-              <span className="w-8 h-8 rounded-xl bg-app flex items-center justify-center shrink-0"><IconHydration size={16} className="text-muted" /></span>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-app">{h.drinkName}</p>
-                <p className="data-stamp">{h.volume}ml · {h.time}</p>
+              <div className="flex gap-1">
+                <button onClick={profileModal.open} className="btn btn-ghost btn-icon"><IconSettings size={14} /></button>
+                <button onClick={manageDrinksModal.open} className="btn btn-ghost btn-icon"><IconEdit size={14} /></button>
               </div>
-              <span className={`data-stamp font-bold ${h.multiplier >= 1 ? 'text-green-400' : 'text-red-400'}`}>{Math.round(h.volume * h.multiplier)}ml</span>
-              <button onClick={async () => { try { await remove(h.id); toast('Entry deleted') } catch { toast('Failed to delete', 'error') } }} className="btn btn-ghost btn-icon text-red-400 shrink-0"><IconDelete /></button>
             </div>
-          ))}
+            <div className="relative w-full h-3 bg-app rounded-full overflow-hidden">
+              <div className="h-full bg-primary rounded-full transition-all duration-[800ms] ease-[cubic-bezier(0.4,0,0.2,1)]" style={{ width: `${fillPercent}%` }}></div>
+            </div>
+            <p className="data-stamp text-right mt-0.5">{Math.round(fillPercent)}% filled</p>
+          </div>
+          <div className="card-panel flex-1">
+            <div className="section-header mb-2">
+              <h2>Log Drinks</h2>
+              <span className="rule" />
+              <span className="stamp">{allDrinks.length} presets</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {allDrinks.map((t, i) => (
+                <button key={i} onClick={() => handleTemplateClick(t)} className="flex items-center gap-1.5 p-2.5 rounded-xl border border-app hover:border-primary/30 transition group">
+                  <span className="text-base shrink-0">{t.icon || '💧'}</span>
+                  <div className="text-left min-w-0 leading-tight">
+                    <p className="text-xs font-bold text-app truncate">{t.name}</p>
+                    <p className="text-[10px] text-muted">{t.volume}ml</p>
+                  </div>
+                </button>
+              ))}
+              <button onClick={addDrinkModal.open} className="flex items-center justify-center gap-1 p-2.5 rounded-xl border-2 border-dashed border-app text-muted hover:border-primary/30 hover:text-app transition text-xs">
+                <IconAdd size={14} /> Preset
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-5 h-full">
+          <div className="card-panel">
+            <div className="section-header mb-2">
+              <h2>Quick Add</h2>
+              <span className="rule" />
+              <span className="stamp">manual ml</span>
+            </div>
+            <div className="flex gap-2">
+              <input type="number" placeholder="e.g. 250" min="1" max="5000" value={quickMl} onChange={e => setQuickMl(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleQuickAdd()} className="form-input flex-1" />
+              <button onClick={handleQuickAdd} className="btn btn-primary">Log</button>
+            </div>
+            {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
+          </div>
+          <div className="card-panel flex-1 flex flex-col">
+            <div className="section-header">
+              <h2>Today's Logbook</h2>
+              <span className="rule" />
+              <span className="stamp">{todayHydrations.length} drink{todayHydrations.length !== 1 ? 's' : ''}</span>
+            </div>
+            {todayHydrations.length === 0 && <p className="text-muted text-sm italic">No drinks logged today.</p>}
+            <div className="space-y-0 mt-4 overflow-y-auto max-h-[180px]">
+              {[...todayHydrations].reverse().map(h => (
+                <div key={h.id} className="card-list-item flex items-center gap-3 first:pt-0 last:pb-0">
+                  <span className="w-8 h-8 rounded-xl bg-app flex items-center justify-center shrink-0"><IconHydration size={16} className="text-muted" /></span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-app">{h.drinkName}</p>
+                    <p className="data-stamp">{h.volume}ml · {h.time}</p>
+                  </div>
+                  <span className={`data-stamp font-bold ${h.multiplier >= 1 ? 'text-green-400' : 'text-red-400'}`}>{Math.round(h.volume * h.multiplier)}ml</span>
+                  <button onClick={async () => { try { await remove(h.id); toast('Entry deleted') } catch { toast('Failed to delete', 'error') } }} className="btn btn-ghost btn-icon text-red-400 shrink-0"><IconDelete /></button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
-      <InfoBar items={[
-        'Goal from weight, height, activity',
-        'Tap drink button = +250ml',
-        'Weather auto-detects location',
-      ]} />
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted items-center">
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400"></span> Full hydration (×1.0+)</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400"></span> Diluted (×&lt;1.0)</span>
+        <span className="flex items-center gap-1">Weather auto-detects location</span>
+      </div>
       <Modal isOpen={addDrinkModal.isOpen} onClose={addDrinkModal.close} title="Create Custom Drink">
         <div className="space-y-3">
           <input type="text" placeholder="Template Name" value={newDrink.name} onChange={e => setNewDrink(p => ({ ...p, name: e.target.value }))} className="form-input" />
@@ -197,15 +223,49 @@ export default function HydrationTracker() {
           <button onClick={handleAddDrink} className="btn btn-primary w-full">Save Drink</button>
         </div>
       </Modal>
-      <Modal isOpen={manageDrinksModal.isOpen} onClose={manageDrinksModal.close} title="Manage Custom Drinks">
-        <div className="space-y-2">
-          {customDrinks?.length === 0 && <p className="text-muted text-sm italic">No custom drinks yet.</p>}
-          {customDrinks?.map(d => (
-            <div key={d.id} className="card-list-item flex items-center justify-between">
-              <span className="text-sm text-app">{d.icon} {d.name} — {d.volume}ml ×{d.multiplier}</span>
-              <button onClick={async () => { try { await removeDrink(d.id); toast('Drink deleted') } catch { toast('Failed to delete', 'error') } }} className="btn btn-ghost btn-icon text-red-400"><IconDelete /></button>
-            </div>
-          ))}
+      <Modal isOpen={manageDrinksModal.isOpen} onClose={() => { manageDrinksModal.close(); setEditingDrinkId(null) }} title="Manage Drinks">
+        <div className="space-y-2 overflow-y-auto max-h-[300px]">
+          {allDrinks.length === 0 && <p className="text-muted text-sm italic">No drinks yet.</p>}
+          {allDrinks.map((d, i) => {
+            const isDefault = !d.id
+            return (
+              <div key={d.id || `default-${i}`} className="card-list-item flex items-center justify-between gap-2">
+                {editingDrinkId === d.id ? (
+                  <div className="flex-1 grid grid-cols-2 gap-2">
+                    <input type="text" placeholder="Name" value={editFields.name} onChange={e => setEditFields(p => ({ ...p, name: e.target.value }))} className="form-input text-xs col-span-2" />
+                    <input type="number" placeholder="Volume" min="1" max="5000" value={editFields.volume} onChange={e => setEditFields(p => ({ ...p, volume: Number(e.target.value) }))} className="form-input text-xs" />
+                    <select value={editFields.multiplier} onChange={e => setEditFields(p => ({ ...p, multiplier: Number(e.target.value) }))} className="form-input text-xs">
+                      <option value="0.5">0.5x</option>
+                      <option value="0.8">0.8x</option>
+                      <option value="0.9">0.9x</option>
+                      <option value="1.0">1.0x</option>
+                      <option value="1.2">1.2x</option>
+                    </select>
+                    <select value={editFields.icon} onChange={e => setEditFields(p => ({ ...p, icon: e.target.value }))} className="form-input text-xs col-span-2">
+                      {DRINK_ICONS.map(ic => <option key={ic} value={ic}>{ic}</option>)}
+                    </select>
+                    <button onClick={saveEdit} className="btn btn-primary text-xs py-1">Save</button>
+                    <button onClick={() => setEditingDrinkId(null)} className="btn btn-ghost text-xs py-1">Cancel</button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <span className="text-[15px] shrink-0">{d.icon || '💧'}</span>
+                      <span className="text-sm text-app truncate">{d.name}</span>
+                      <span className="data-stamp whitespace-nowrap">{d.volume}ml ×{d.multiplier}</span>
+                      {isDefault && <span className="text-[10px] text-muted bg-app px-1.5 py-0.5 rounded">Default</span>}
+                    </div>
+                    {!isDefault && (
+                      <div className="flex gap-1 shrink-0">
+                        <button onClick={() => startEdit(d)} className="btn btn-ghost btn-icon"><IconEdit size={14} /></button>
+                        <button onClick={async () => { try { await removeDrink(d.id); toast('Drink deleted') } catch { toast('Failed to delete', 'error') } }} className="btn btn-ghost btn-icon text-red-400"><IconDelete size={14} /></button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )
+          })}
         </div>
       </Modal>
       <Modal isOpen={profileModal.isOpen} onClose={profileModal.close} title="Hydration Profile">

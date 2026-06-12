@@ -104,6 +104,13 @@ export default function Analytics() {
           <LifetimeStat label="Journals" value={journalCount} />
         </div>
       </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted items-center">
+        <span className="flex items-center gap-1"><span className="w-3 h-0.5 rounded-full bg-primary inline-block"></span> Mood</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-0.5 rounded-full bg-[#10b981] inline-block" style={{ borderTop: '1px dashed #10b981', height: 0 }}></span> Sleep</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#f59e0b80] inline-block"></span> Habit Rate</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary inline-block"></span> Hydration</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#10b981] inline-block"></span> Breathing</span>
+      </div>
     </div>
   )
 }

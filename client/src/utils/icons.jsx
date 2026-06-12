@@ -79,6 +79,15 @@ export function IconExport({ size = 18, className = '' }) {
 export function IconImport({ size = 18, className = '' }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
 }
+export function IconPalette({ size = 18, className = '' }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="13.5" cy="6.5" r="1.5" fill="currentColor"/><circle cx="6.5" cy="10" r="1.5" fill="currentColor"/><circle cx="17" cy="13" r="1.5" fill="currentColor"/><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10c1.38 0 2.5-1.12 2.5-2.5 0-.66-.26-1.26-.68-1.7-.42-.44-.68-1.04-.68-1.7C13 15.12 14.12 14 15.5 14H18c3.31 0 6-2.69 6-6C24 5.18 18.61 2 12 2z"/></svg>
+}
+export function IconLeaf({ size = 18, className = '' }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M11 20A7 7 0 0 1 9.8 6.9C15.5 4.9 17 3.5 19 2c1 2 2 4.5 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.5 12 13 13 12"/></svg>
+}
+export function IconSparkle({ size = 18, className = '' }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2l1.5 5.5L19 9l-5.5 1.5L12 16l-1.5-5.5L5 9l5.5-1.5z"/></svg>
+}
 export function IconTheme({ size = 18, className = '' }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
 }
@@ -125,6 +134,10 @@ export function IconMood10({ size = 20, className = '' }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="11" strokeDasharray="2 2"/><path d="M7 15 Q12 19 17 15"/><path d="M8.5 9 L8.5 10 M8 9.5 L9 9.5"/><path d="M15.5 9 L15.5 10 M15 9.5 L16 9.5"/></svg>
 }
 
+export function IconUser({ size = 20, className = '' }) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+}
+
 export const NAV_ICONS = {
   dashboard: IconDashboard,
   mood: IconMood,
@@ -135,5 +148,6 @@ export const NAV_ICONS = {
   journal: IconJournal,
   analytics: IconAnalytics,
   calendar: IconCalendar,
+  profile: IconUser,
   settings: IconSettings
 }

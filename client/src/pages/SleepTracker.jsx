@@ -6,7 +6,6 @@ import { LoadingSpinner } from '../components/ui/Loaders'
 import { IconSleep, IconDelete, IconSettings } from '../utils/icons'
 import { useToast } from '../components/ui/Toast'
 import Modal, { useModal } from '../components/ui/Modal'
-import InfoBar from '../components/ui/InfoBar'
 
 export default function SleepTracker() {
   const { data: sleepLogs, loading, add, remove } = useCollection('sleep', { orderBy: { field: 'timestamp', direction: 'desc' } })
@@ -122,15 +121,6 @@ export default function SleepTracker() {
             {error && <p className="text-red-400 text-sm mb-3">{error}</p>}
             <button onClick={handleSave} className="btn btn-primary w-full">Log Sleep</button>
           </div>
-          <div className="card-panel">
-            <h2 className="text-sm font-bold text-app mb-3">How It Works</h2>
-            <ul className="space-y-2 text-xs text-muted">
-              <li className="flex gap-2"><span className="text-primary shrink-0">1.</span> Enter your <strong className="text-app">bedtime</strong> and <strong className="text-app">wake time</strong></li>
-              <li className="flex gap-2"><span className="text-primary shrink-0">2.</span> Add <strong className="text-app">awake minutes</strong> if you woke up during the night</li>
-              <li className="flex gap-2"><span className="text-primary shrink-0">3.</span> Rate your <strong className="text-app">sleep quality</strong> and add notes</li>
-              <li className="flex gap-2"><span className="text-primary shrink-0">4.</span> Use the <strong className="text-app">gear icon</strong> ⚙️ to calculate optimal sleep cycles</li>
-            </ul>
-          </div>
         </div>
         <div className="lg:w-1/3 space-y-5">
           <div className="card-panel">
@@ -159,12 +149,15 @@ export default function SleepTracker() {
               ))}
             </div>
           </div>
-          <InfoBar items={[
-            '~90min sleep cycles',
-            '5-6 cycles optimal',
-            'Enter 2 values → get the 3rd',
-            'Quality: 1-5 rating',
-          ]} />
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted items-center">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500/40"></span> Night Sleep</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500/40"></span> Nap</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400"></span> Excellent</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400"></span> Good</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400"></span> Fair</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-400"></span> Poor</span>
+            <span className="flex items-center gap-1"><IconSettings size={10} /> Cycle calculator</span>
+          </div>
         </div>
       </div>
       <Modal isOpen={calcModal.isOpen} onClose={calcModal.close} title="Sleep Cycle Calculator">

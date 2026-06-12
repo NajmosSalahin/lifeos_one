@@ -39,11 +39,19 @@ export default function Calendar() {
     return 'green'
   }
 
+  function getMoodValue(dateStr) {
+    const dayMoods = moods?.filter(m => m.date === dateStr) || []
+    if (!dayMoods.length) return null
+    return Math.round(dayMoods.reduce((s, m) => s + m.value, 0) / dayMoods.length)
+  }
+
   function getActivityDots(dateStr) {
     const dots = []
     if (journals?.some(j => j.date === dateStr)) dots.push('bg-blue-400')
     if (sleepLogs?.some(s => s.date === dateStr)) dots.push('bg-purple-400')
     if (breathing?.some(b => b.date === dateStr)) dots.push('bg-emerald-400')
+    if (habits?.some(h => h.doneDates?.includes(dateStr))) dots.push('bg-orange-400')
+    if (hydrations?.some(h => h.date === dateStr)) dots.push('bg-cyan-400')
     return dots
   }
 
@@ -70,13 +78,13 @@ export default function Calendar() {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
   return (
-    <div className="page-enter space-y-6">
+    <div className="page-enter space-y-5">
       <h1 className="page-title">Calendar</h1>
       <div className="card-panel">
-        <div className="section-header mb-4">
-          <button onClick={() => changeMonth(-1)} className="btn-icon"><IconChevronLeft size={20} /></button>
+        <div className="section-header mb-3">
+          <button onClick={() => changeMonth(-1)} className="btn-icon"><IconChevronLeft size={18} /></button>
           <h2 className="font-display text-lg text-app flex-1 text-center">{monthLabel}</h2>
-          <button onClick={() => changeMonth(1)} className="btn-icon"><IconChevronRight size={20} /></button>
+          <button onClick={() => changeMonth(1)} className="btn-icon"><IconChevronRight size={18} /></button>
           <span className="stamp">{year}</span>
         </div>
         <div className="grid grid-cols-7 gap-1 mb-2">
@@ -90,8 +98,9 @@ export default function Calendar() {
             const dateStr = toISODate(dateObj)
             const isT = dateStr === todayStr
             const moodColor = getMoodColor(dateStr)
+            const moodVal = getMoodValue(dateStr)
             const dots = getActivityDots(dateStr)
-            let cls = 'aspect-square rounded-lg text-xs font-bold flex flex-col items-center justify-center transition border cursor-pointer '
+            let cls = 'h-14 rounded-lg text-xs font-bold flex flex-col items-center justify-center transition border cursor-pointer '
             if (isT) cls += 'bg-primary text-white border-primary shadow-md '
             else if (moodColor === 'red') cls += 'bg-red-500/15 text-red-400 border-red-500/30 '
             else if (moodColor === 'yellow') cls += 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30 '
@@ -99,7 +108,8 @@ export default function Calendar() {
             else cls += 'bg-app text-app border-app hover:scale-[1.02] '
             return (
               <button key={day} className={cls} onClick={() => openDayDetail(dateStr)}>
-                <span>{day}</span>
+                <span className="leading-none">{day}</span>
+                {moodVal && <span className="text-[9px] opacity-70 leading-none mt-0.5">{moodVal}</span>}
                 {dots.length > 0 && (
                   <div className="flex gap-0.5 mt-0.5">
                     {dots.map((c, j) => <span key={j} className={`w-1 h-1 rounded-full ${c}`}></span>)}
@@ -108,6 +118,13 @@ export default function Calendar() {
               </button>
             )
           })}
+        </div>
+        <div className="flex flex-wrap gap-x-3 gap-y-1 mt-3 text-[10px] text-muted items-center">
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-400"></span> Journal</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-400"></span> Sleep</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-400"></span> Breathe</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-400"></span> Habits</span>
+          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-400"></span> Hydrate</span>
         </div>
       </div>
       <Modal isOpen={detailModal.isOpen} onClose={detailModal.close} title={detailDate ? formatDate(detailDate) : ''}>

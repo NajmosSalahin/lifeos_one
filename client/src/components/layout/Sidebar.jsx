@@ -14,6 +14,7 @@ function SidebarNav({ isMobile, onClose }) {
     { path: '/journal', label: 'Journal', icon: NAV_ICONS.journal },
     { path: '/analytics', label: 'Analytics', icon: NAV_ICONS.analytics },
     { path: '/calendar', label: 'Calendar', icon: NAV_ICONS.calendar },
+    { path: '/profile', label: 'Profile', icon: NAV_ICONS.profile },
     { path: '/settings', label: 'Settings', icon: NAV_ICONS.settings }
   ]
 

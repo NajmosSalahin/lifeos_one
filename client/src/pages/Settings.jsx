@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, createElement } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { useCollection } from '../hooks/useFirestore'
@@ -7,8 +7,10 @@ import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { ConfirmModal, useModal } from '../components/ui/Modal'
 import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore'
 import { db } from '../firebase'
-import { IconExport, IconImport, IconTheme } from '../utils/icons'
+import { IconExport, IconImport, IconTheme, IconMoon, IconSun, IconPalette, IconLeaf, IconSparkle } from '../utils/icons'
 import { useToast } from '../components/ui/Toast'
+
+const CATEGORY_ICONS = { moon: IconMoon, sun: IconSun, palette: IconPalette, leaf: IconLeaf, sparkle: IconSparkle }
 
 export default function Settings() {
   const { profile, updateProfileField } = useAuth()
@@ -107,62 +109,62 @@ export default function Settings() {
   const themeEntries = Object.entries(themes)
 
   return (
-    <div className="page-enter space-y-8">
+    <div className="page-enter space-y-6">
       <h1 className="page-title">Settings</h1>
-      <div className="card-panel">
-        <div className="section-header">
-          <h2>Data Management</h2>
-          <span className="rule" />
-          <span className="stamp">export / import</span>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <button onClick={handleExportCSV} className="btn btn-secondary"><IconExport size={16} /> Export CSV</button>
-          <button onClick={handleExportMD} className="btn btn-secondary"><IconExport size={16} /> Export MD</button>
-          <button onClick={handleExportPDF} className="btn btn-secondary"><IconExport size={16} /> Export PDF</button>
-          <button onClick={handleExportJSON} className="btn btn-secondary"><IconExport size={16} /> Raw Backup</button>
-        </div>
-        <div>
-          <label className="btn btn-secondary cursor-pointer inline-flex items-center gap-2 border-dashed">
-            {importing ? 'Importing...' : <><IconImport size={16} /> Import JSON Backup</>}
-            <input ref={importRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
-          </label>
-        </div>
-      </div>
-      <div className="card-panel">
-        <div className="section-header">
-          <h2>Theme Engine</h2>
-          <span className="rule" />
-          <span className="stamp"><IconTheme size={14} /> {activeTheme}</span>
-        </div>
-        {categories.map(cat => {
-          const catThemes = themeEntries.filter(([_, t]) => t.category === cat.name)
-          return (
-            <div key={cat.name} className="mb-6">
-              <h3 className="text-sm font-bold text-app mb-2">{cat.icon} {cat.name}</h3>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                {catThemes.map(([name, theme]) => (
-                  <button key={name} onClick={() => updateProfileField({ theme: name })} className={`p-2 rounded-lg border text-xs text-center transition ${activeTheme === name ? 'ring-2 ring-primary border-primary' : 'border-app hover:border-primary/30'}`} style={{ background: theme.surface, color: theme.textMain }}>
-                    <div className="flex gap-1 mb-1 justify-center">
-                      <span className="w-3 h-3 rounded-full" style={{ background: theme.primary }}></span>
-                      <span className="w-3 h-3 rounded-full" style={{ background: theme.bg }}></span>
-                      <span className="w-3 h-3 rounded-full" style={{ background: theme.textMain }}></span>
-                    </div>
-                    <p className="truncate">{name}</p>
-                    {activeTheme === name && <span className="text-primary">✓</span>}
-                  </button>
-                ))}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4 lg:gap-6">
+        <div className="card-panel">
+          <div className="section-header mb-3">
+            <h2>Theme Engine</h2>
+            <span className="rule" />
+            <span className="stamp"><IconTheme size={14} /> {activeTheme}</span>
+          </div>
+          {categories.map(cat => {
+            const catThemes = themeEntries.filter(([_, t]) => t.category === cat.name)
+            return (
+              <div key={cat.name} className="mb-3">
+                <h3 className="text-sm font-bold text-app mb-1.5 inline-flex items-center gap-1">{CATEGORY_ICONS[cat.icon] && createElement(CATEGORY_ICONS[cat.icon], { size: 14 })} {cat.name}</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {catThemes.map(([name, theme]) => (
+                    <button key={name} onClick={() => updateProfileField({ theme: name })} className={`p-2 rounded-lg border text-xs text-center transition leading-tight ${activeTheme === name ? 'ring-1 ring-primary border-primary' : 'border-app hover:border-primary/30'}`} style={{ background: theme.surface, color: theme.textMain }}>
+                      <div className="flex gap-1 mb-1 justify-center">
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ background: theme.primary }}></span>
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ background: theme.bg }}></span>
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ background: theme.textMain }}></span>
+                      </div>
+                      <p className="truncate">{name}</p>
+                      {activeTheme === name && <span className="text-primary block mt-0.5">✓</span>}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
-      <div className="card-panel border-red-500/30">
-        <div className="section-header">
-          <h2 className="text-red-400">Danger Zone</h2>
-          <span className="rule" />
-          <span className="stamp text-red-400">irreversible</span>
+            )
+          })}
         </div>
-        <button onClick={wipeModal.open} className="btn btn-danger">Wipe All Data</button>
+        <div className="card-panel space-y-5">
+          <div>
+            <div className="section-header mb-3">
+              <h2>Data Management</h2>
+              <span className="rule" />
+              <span className="stamp">export / import</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <button onClick={handleExportCSV} className="btn btn-secondary btn-sm"><IconExport size={14} /> CSV</button>
+              <button onClick={handleExportMD} className="btn btn-secondary btn-sm"><IconExport size={14} /> MD</button>
+              <button onClick={handleExportPDF} className="btn btn-secondary btn-sm"><IconExport size={14} /> PDF</button>
+              <button onClick={handleExportJSON} className="btn btn-secondary btn-sm"><IconExport size={14} /> Backup</button>
+            </div>
+            <label className="btn btn-secondary btn-sm cursor-pointer inline-flex items-center gap-1.5 border-dashed">
+              {importing ? 'Importing...' : <><IconImport size={14} /> Import JSON</>}
+              <input ref={importRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
+            </label>
+          </div>
+          <div className="pt-4 border-t border-red-500/20">
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-red-400 font-semibold uppercase tracking-wider">Danger Zone</p>
+              <button onClick={wipeModal.open} className="btn btn-danger btn-sm">Wipe All Data</button>
+            </div>
+          </div>
+        </div>
       </div>
       <ConfirmModal isOpen={wipeModal.isOpen} onClose={wipeModal.close} onConfirm={executeFactoryReset} title="Wipe All Data" message="This will permanently delete ALL your data. This action cannot be undone!" confirmText="Wipe Everything" danger />
       <Modal isOpen={importResultModal.isOpen} onClose={importResultModal.close} title="Import">
