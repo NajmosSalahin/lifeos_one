@@ -26,7 +26,7 @@ export const DEFAULT_PROFILE = {
   activityLevel: 1.2,
   temp: 22,
   humidity: 50,
-  theme: 'Tokyo Night'
+  theme: 'Parchment'
 }
 
 export const ACTIVITY_OPTIONS = [
@@ -39,6 +39,11 @@ export const ACTIVITY_OPTIONS = [
 export const MOOD_LABELS = {
   1: 'Awful', 2: 'Very Bad', 3: 'Bad', 4: 'Poor', 5: 'Neutral',
   6: 'Okay', 7: 'Good', 8: 'Very Good', 9: 'Great', 10: 'Amazing'
+}
+
+export const ENERGY_LABELS = {
+  1: 'Drained', 2: 'Very Low', 3: 'Low', 4: 'Fair',   5: 'Moderate',
+  6: 'Decent', 7: 'Good', 8: 'High', 9: 'Very High', 10: 'Max'
 }
 
 export const DRINK_ICONS = ['ph-drop', 'ph-drop-half', 'ph-coffee', 'ph-tea-bag', 'ph-bottle', 'ph-wine', 'ph-beer', 'ph-flask']

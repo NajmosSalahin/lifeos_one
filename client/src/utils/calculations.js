@@ -1,3 +1,5 @@
+import { IconMood1, IconMood2, IconMood3, IconMood4, IconMood5, IconMood6, IconMood7, IconMood8, IconMood9, IconMood10 } from './icons'
+
 export function calculateSleepDuration(bedTime, wakeTime, awakeMinutes) {
   if (!bedTime || !wakeTime) return { hours: 0, minutes: 0 }
   const [bh, bm] = bedTime.split(':').map(Number)
@@ -19,22 +21,26 @@ export function calculateHydrationGoal(profile) {
   return goal
 }
 
-export function calculateStreak(doneDates, skippedDates) {
+export function calculateStreak(doneDates, skippedDates, freezeLimit = 0) {
   const today = new Date()
   let streak = 0
+  let freezesUsed = 0
   for (let i = 0; i < 365; i++) {
     const d = new Date(today)
     d.setDate(d.getDate() - i)
     const dateStr = d.getFullYear() + '-' +
       String(d.getMonth() + 1).padStart(2, '0') + '-' +
       String(d.getDate()).padStart(2, '0')
-    if (doneDates.includes(dateStr) || skippedDates.includes(dateStr)) {
+    if (doneDates.includes(dateStr)) {
       streak++
+    } else if (skippedDates.includes(dateStr) && freezesUsed < freezeLimit) {
+      streak++
+      freezesUsed++
     } else {
       break
     }
   }
-  return streak
+  return { streak, freezesUsed }
 }
 
 export function calculateSleepCycles(wakeTime, cycles) {
@@ -84,7 +90,7 @@ export function calculateBedtimeFromCycles(bedTime, cycles) {
   }
 }
 
-export function moodEmoji(value) {
-  const emojis = { 1: '😰', 2: '😢', 3: '😞', 4: '😕', 5: '😐', 6: '🙂', 7: '😊', 8: '😄', 9: '🤩', 10: '🌟' }
-  return emojis[value] || '😐'
+export function moodIcon(value) {
+  const icons = { 1: IconMood1, 2: IconMood2, 3: IconMood3, 4: IconMood4, 5: IconMood5, 6: IconMood6, 7: IconMood7, 8: IconMood8, 9: IconMood9, 10: IconMood10 }
+  return icons[value] || IconMood5
 }

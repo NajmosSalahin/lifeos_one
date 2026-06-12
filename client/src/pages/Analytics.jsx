@@ -50,7 +50,6 @@ export default function Analytics() {
   const totalBreathSecs = weekBreathing.reduce((s, v) => s + v, 0)
   const avgBreathe = formatSeconds(Math.round(totalBreathSecs / 7))
 
-  // Lifetime stats
   const lifetimeMood = moods?.length ? (moods.reduce((s, m) => s + m.value, 0) / moods.length).toFixed(1) : '-'
   const totalSleepHours = sleepLogs?.reduce((sum, s) => sum + (s.hours || 0) + (s.minutes || 0) / 60, 0).toFixed(1) || '0'
   const totalWater = hydrations?.reduce((sum, h) => sum + (h.volume || 0) * (h.multiplier || 1), 0) / 1000 || 0
@@ -58,8 +57,8 @@ export default function Analytics() {
   const journalCount = journals?.length || 0
 
   return (
-    <div className="space-y-6" id="view-analytics">
-      <h1 className="text-2xl font-bold text-app">Analytics</h1>
+    <div className="page-enter space-y-6" id="view-analytics">
+      <h1 className="page-title">Analytics</h1>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard label="Avg Mood (7d)" value={avgMood} />
         <StatCard label="Avg Sleep (7d)" value={avgSleep !== '-' ? `${avgSleep}h` : '-'} />
@@ -91,8 +90,12 @@ export default function Analytics() {
           breathing={weekBreathing.map(s => Math.round(s / 60 * 10) / 10)}
         />
       </ChartCard>
-      <div className="bg-surface border border-app rounded-xl p-4">
-        <h2 className="font-bold text-app mb-3">Lifetime Overview</h2>
+      <div className="card-panel">
+        <div className="section-header">
+          <h2>Lifetime Overview</h2>
+          <span className="rule" />
+          <span className="stamp">all time</span>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <LifetimeStat label="Lifetime Mood" value={lifetimeMood !== '-' ? `${lifetimeMood}/10` : '-'} />
           <LifetimeStat label="Total Sleep" value={`${totalSleepHours}h`} />
@@ -101,23 +104,30 @@ export default function Analytics() {
           <LifetimeStat label="Journals" value={journalCount} />
         </div>
       </div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1 text-[10px] text-muted items-center">
+        <span className="flex items-center gap-1"><span className="w-3 h-0.5 rounded-full bg-primary inline-block"></span> Mood</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-0.5 rounded-full bg-[#10b981] inline-block" style={{ borderTop: '1px dashed #10b981', height: 0 }}></span> Sleep</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-[#f59e0b80] inline-block"></span> Habit Rate</span>
+        <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-sm bg-primary inline-block"></span> Hydration</span>
+        <span className="flex items-center gap-1"><span className="w-3 h-0.5 bg-[#10b981] inline-block"></span> Breathing</span>
+      </div>
     </div>
   )
 }
 
 function StatCard({ label, value }) {
   return (
-    <div className="bg-surface border border-app rounded-xl p-4">
-      <p className="text-xs text-muted mb-1">{label}</p>
-      <p className="text-xl font-bold text-app">{value}</p>
+    <div className="card-stat">
+      <p className="stat-label">{label}</p>
+      <p className="stat-value">{value}</p>
     </div>
   )
 }
 
 function ChartCard({ title, children, full }) {
   return (
-    <div className={`bg-surface border border-app rounded-xl p-4 ${full ? 'lg:col-span-2' : ''}`}>
-      <h2 className="font-bold text-app mb-3">{title}</h2>
+    <div className={`card-panel ${full ? 'lg:col-span-2' : ''}`}>
+      <h2 className="font-display text-xl text-app mb-4">{title}</h2>
       {children}
     </div>
   )
@@ -125,9 +135,9 @@ function ChartCard({ title, children, full }) {
 
 function LifetimeStat({ label, value }) {
   return (
-    <div className="text-center p-3 rounded-lg border border-app">
-      <p className="text-lg font-bold text-primary">{value}</p>
-      <p className="text-[10px] text-muted">{label}</p>
+    <div className="card-stat text-center">
+      <p className="stat-value text-primary">{value}</p>
+      <p className="stat-label">{label}</p>
     </div>
   )
 }
