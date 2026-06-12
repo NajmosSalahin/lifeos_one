@@ -46,7 +46,7 @@ export default function App() {
         <main className="flex-1 min-w-0 overflow-y-auto pb-16 md:pb-0">
           <div className="max-w-5xl mx-auto px-4 py-6">
             <Suspense fallback={<LoadingSpinner />}>
-              <div key={location.pathname} className="page-enter">
+              <div>
                 <Routes>
                   <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Landing />} />
                   <Route path="/login" element={user ? <Navigate to="/dashboard" replace /> : <Login />} />

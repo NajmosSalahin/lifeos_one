@@ -91,10 +91,6 @@ input[type="range"] { accent-color: var(--primary); }
 .btn-sm { padding: 6px 12px; font-size: 0.75rem; border-radius: 8px; }
 .btn-icon { padding: 6px; border-radius: 8px; line-height: 1; }
 
-/* Page transition */
-.page-enter { animation: pageIn 0.25s ease-out both; }
-@keyframes pageIn { from { opacity: 0; } to { opacity: 1; } }
-
 /* Stagger children */
 .stagger > * { animation: fadeUp 0.3s ease-out both; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
@@ -109,6 +105,24 @@ input[type="range"] { accent-color: var(--primary); }
 @keyframes toastIn { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 .toast-exit { animation: toastOut 0.2s ease-in both; }
 @keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-12px); } }
+
+.card-glass {
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.card-glass:hover { border-color: color-mix(in srgb, var(--primary) 30%, transparent); transform: translateY(-2px); }
+
+.glass-footer {
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 25%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
 
 @layer utilities {
   .inset-10 { inset: calc(var(--spacing) * 16); }

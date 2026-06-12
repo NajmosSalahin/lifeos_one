@@ -26,11 +26,11 @@ function SidebarNav({ isMobile, onClose }) {
           const NavIcon = l.icon
           return (
             <Link key={l.path} to={l.path} onClick={onClose}
-              className={`flex items-center ${isMobile ? 'gap-3 px-3' : 'justify-center group-hover:justify-start gap-0 group-hover:gap-3 px-0 group-hover:px-3'} py-2.5 rounded-xl text-sm transition-all duration-200 ${isActive ? 'bg-primary/10 text-primary font-medium' : 'text-muted hover:text-app hover:bg-[var(--border)]/30'}`}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors duration-200 ${isActive ? 'bg-primary/10 text-primary font-medium' : 'text-muted hover:text-app hover:bg-[var(--border)]/30'}`}
               title={!isMobile && !isActive ? l.label : undefined}>
-              <NavIcon size={18} />
+              <NavIcon size={22} />
               {isMobile && <span>{l.label}</span>}
-              {!isMobile && <span className="hidden group-hover:inline">{l.label}</span>}
+              {!isMobile && <span className="overflow-hidden whitespace-nowrap transition-all duration-500 delay-100 max-w-0 group-hover:max-w-[120px] opacity-0 group-hover:opacity-100">{l.label}</span>}
             </Link>
           )
         })}
@@ -51,7 +51,7 @@ export default function Sidebar({ mobileOpen, onMobileClose }) {
         </div>
       )}
 
-      <aside className="hidden md:flex w-16 hover:w-52 group transition-all duration-200 shrink-0 flex-col bg-surface border-r border-app z-30 min-h-0 overflow-hidden">
+      <aside className="hidden md:flex w-16 hover:w-52 group transition-all duration-300 ease-in-out shrink-0 flex-col bg-surface border-r border-app z-30 min-h-0 overflow-hidden">
         <SidebarNav />
       </aside>
     </>

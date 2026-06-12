@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, setDoc, getDocs, where } from 'firebase/firestore'
+import { collection, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, where } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useAuth } from '../contexts/AuthContext'
+
+const snapCache = new Map()
 
 export function useCollection(path, options = {}) {
   const { user } = useAuth()
@@ -10,6 +12,9 @@ export function useCollection(path, options = {}) {
 
   useEffect(() => {
     if (!user) { setData([]); setLoading(false); return }
+    const cacheKey = `${user.uid}:${path}`
+    const cached = snapCache.get(cacheKey)
+    if (cached) { setData(cached); setLoading(false) }
     const ref = collection(db, 'users', user.uid, path)
     const q = options.orderBy
       ? query(ref, orderBy(options.orderBy.field, options.orderBy.direction || 'desc'))
@@ -17,6 +22,7 @@ export function useCollection(path, options = {}) {
     const unsub = onSnapshot(q, (snap) => {
       const arr = []
       snap.forEach(d => arr.push({ id: d.id, ...d.data() }))
+      snapCache.set(cacheKey, arr)
       setData(arr)
       setLoading(false)
     })
@@ -53,11 +59,15 @@ export function useDateCollection(path, date) {
 
   useEffect(() => {
     if (!user || !date) { setData([]); setLoading(false); return }
+    const cacheKey = `${user.uid}:${path}:${date}`
+    const cached = snapCache.get(cacheKey)
+    if (cached) { setData(cached); setLoading(false) }
     const ref = collection(db, 'users', user.uid, path)
     const q = query(ref, where('date', '==', date))
     const unsub = onSnapshot(q, (snap) => {
       const arr = []
       snap.forEach(d => arr.push({ id: d.id, ...d.data() }))
+      snapCache.set(cacheKey, arr)
       setData(arr)
       setLoading(false)
     })

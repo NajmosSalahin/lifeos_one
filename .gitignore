@@ -1,3 +1,6 @@
 node_modules
 .opencode
 zenith-tracker-fff26-firebase-adminsdk-fbsvc-345cb409b0.json
+.env
+client/dist
+.firebase
