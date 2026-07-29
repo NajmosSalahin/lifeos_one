@@ -1,6 +1,7 @@
 {
   "name": "zenith-tracker",
   "private": true,
+  "workspaces": ["client", "server"],
   "scripts": {
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "npm run dev --prefix client",
