@@ -16,7 +16,7 @@ export default function Login() {
     setError('')
     setLoading(true)
     try { await login(email, password) }
-    catch (err) { setError(err.message.replace('Firebase: ', '').replace(/\(.*\)/, '')) }
+    catch (err) { setError(err.message.replace(/^\w+:\s*/, '').replace(/\(.*\)/, '')) }
     setLoading(false)
   }
 

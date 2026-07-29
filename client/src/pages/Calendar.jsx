@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useCollection } from '../hooks/useFirestore'
+import { useCollection } from '../hooks/useSupabase'
 import { getDaysInMonth, getFirstDayOfMonth, toISODate, formatDate, formatMinutes } from '../utils/helpers'
 import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { useModal } from '../components/ui/Modal'

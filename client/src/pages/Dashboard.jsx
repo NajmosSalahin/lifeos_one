@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { useCollection, useTodayCollection } from '../hooks/useFirestore'
+import { useCollection, useTodayCollection } from '../hooks/useSupabase'
 import { todayStr, getWeekDates } from '../utils/helpers'
 import { LoadingSpinner } from '../components/ui/Loaders'
 import MoodTrendChart from '../components/charts/MoodTrendChart'

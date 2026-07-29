@@ -1,12 +1,44 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-  signOut, GoogleAuthProvider, signInWithPopup, sendPasswordResetEmail, updateProfile } from 'firebase/auth'
-import { doc, setDoc, getDoc } from 'firebase/firestore'
-import { auth, db } from '../firebase'
+import { supabase } from '../supabase'
 import { DEFAULT_HABITS, DEFAULT_DRINKS, DEFAULT_TECHNIQUES, DEFAULT_PROFILE } from '../utils/defaults'
 import { applyTheme } from '../utils/themes'
 
 const AuthContext = createContext(null)
+
+function snakeToCamel(str) {
+  return str.replace(/_([a-z])/g, (_, c) => c.toUpperCase())
+}
+
+function mapProfileToCamel(row) {
+  if (!row || typeof row !== 'object') return row
+  const result = {}
+  for (const [key, value] of Object.entries(row)) {
+    result[snakeToCamel(key)] = value
+  }
+  return result
+}
+
+function camelToSnake(str) {
+  return str.replace(/[A-Z]/g, c => '_' + c.toLowerCase())
+}
+
+function mapProfileToSnake(data) {
+  if (!data || typeof data !== 'object') return data
+  const result = {}
+  for (const [key, value] of Object.entries(data)) {
+    result[camelToSnake(key)] = value
+  }
+  return result
+}
+
+function mapUser(sessionUser) {
+  if (!sessionUser) return null
+  return {
+    ...sessionUser,
+    uid: sessionUser.id,
+    displayName: sessionUser.user_metadata?.display_name || sessionUser.user_metadata?.full_name || sessionUser.email?.split('@')[0] || 'User'
+  }
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -14,22 +46,22 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null)
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      const u = mapUser(session?.user)
       setUser(u)
-      if (u) await loadProfile(u.uid)
+      if (u) await loadProfile(u.id)
       else setProfile(null)
       setLoading(false)
     })
-    return unsub
+    return () => subscription?.unsubscribe()
   }, [])
 
   async function loadProfile(uid) {
-    const ref = doc(db, 'users', uid)
-    const snap = await getDoc(ref)
-    if (snap.exists()) {
-      const data = snap.data()
-      setProfile(data)
-      if (data.theme) applyTheme(data.theme)
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', uid).single()
+    if (data && !error) {
+      const camel = mapProfileToCamel(data)
+      setProfile(camel)
+      if (camel.theme) applyTheme(camel.theme)
     } else {
       await seedDefaults(uid)
     }
@@ -37,65 +69,75 @@ export function AuthProvider({ children }) {
 
   async function seedDefaults(uid) {
     const p = { ...DEFAULT_PROFILE }
-    const ref = doc(db, 'users', uid)
-    await setDoc(ref, {
+    const profSnake = mapProfileToSnake({
+      id: uid,
       displayName: user?.displayName || 'User',
       email: user?.email || '',
       ...p,
       createdAt: Date.now()
     })
+    const { error } = await supabase.from('profiles').upsert(profSnake)
+    if (error) throw error
     setProfile({ displayName: user?.displayName || 'User', email: user?.email || '', ...p })
     applyTheme(p.theme)
-    // Seed subcollections
-    const batch = []
-    DEFAULT_HABITS.forEach(h => {
-      const ref = doc(db, 'users', uid, 'habits', 'h' + Date.now() + Math.random())
-      batch.push(setDoc(ref, { id: ref.id, name: h.name, archived: false, doneDates: [], skippedDates: [], createdAt: Date.now() }))
-    })
-    DEFAULT_DRINKS.forEach(d => {
-      const ref = doc(db, 'users', uid, 'customDrinks', 'd' + Date.now() + Math.random())
-      batch.push(setDoc(ref, { id: ref.id, ...d }))
-    })
-    DEFAULT_TECHNIQUES.forEach(t => {
-      const ref = doc(db, 'users', uid, 'breathingTechniques', 't' + Date.now() + Math.random())
-      batch.push(setDoc(ref, { id: ref.id, ...t }))
-    })
-    await Promise.all(batch)
+
+    const habits = DEFAULT_HABITS.map(h => ({
+      user_id: uid, name: h.name, archived: false, done_dates: [], skipped_dates: [],
+      weekly_goal: 0, freeze_limit: 0, created_at: new Date().toISOString()
+    }))
+    const drinks = DEFAULT_DRINKS.map(d => ({ user_id: uid, name: d.name, volume: d.volume, multiplier: d.multiplier, icon: d.icon }))
+    const techniques = DEFAULT_TECHNIQUES.map(t => ({ user_id: uid, name: t.name, inhale: t.inhale, hold1: t.hold1, exhale: t.exhale, hold2: t.hold2 }))
+
+    await Promise.all([
+      supabase.from('habits').insert(habits),
+      supabase.from('custom_drinks').insert(drinks),
+      supabase.from('breathing_techniques').insert(techniques)
+    ])
   }
 
   async function login(email, password) {
-    const cred = await signInWithEmailAndPassword(auth, email, password)
-    await loadProfile(cred.user.uid)
-    return cred
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    await loadProfile(data.user.id)
+    return data
   }
 
   async function register(email, password, displayName) {
-    const cred = await createUserWithEmailAndPassword(auth, email, password)
-    await updateProfile(cred.user, { displayName })
-    await seedDefaults(cred.user.uid)
-    return cred
+    const { data, error } = await supabase.auth.signUp({
+      email, password,
+      options: { data: { display_name: displayName } }
+    })
+    if (error) throw error
+    await seedDefaults(data.user.id)
+    return data
   }
 
   async function loginWithGoogle() {
-    const provider = new GoogleAuthProvider()
-    const cred = await signInWithPopup(auth, provider)
-    await loadProfile(cred.user.uid)
-    return cred
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin }
+    })
+    if (error) throw error
+    return data
   }
 
   async function logout() {
-    await signOut(auth)
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
     setProfile(null)
   }
 
-  function resetPassword(email) {
-    return sendPasswordResetEmail(auth, email)
+  async function resetPassword(email) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login`
+    })
+    if (error) throw error
   }
 
   async function updateProfileField(fields) {
     if (!user) return
-    const ref = doc(db, 'users', user.uid)
-    await setDoc(ref, fields, { merge: true })
+    const { error } = await supabase.from('profiles').update(mapProfileToSnake(fields)).eq('id', user.id)
+    if (error) throw error
     setProfile(prev => ({ ...prev, ...fields }))
     if (fields.theme) applyTheme(fields.theme)
   }

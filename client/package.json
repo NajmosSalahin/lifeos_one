@@ -9,8 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.111.0",
     "chart.js": "^4.4.1",
-    "firebase": "^10.7.1",
     "html2pdf.js": "^0.10.1",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",

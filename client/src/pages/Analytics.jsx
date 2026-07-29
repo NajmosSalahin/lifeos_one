@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { useCollection } from '../hooks/useFirestore'
+import { useCollection } from '../hooks/useSupabase'
 import { getWeekDates, formatSeconds } from '../utils/helpers'
 import { LoadingSpinner } from '../components/ui/Loaders'
 import { Chart, registerables } from 'chart.js'

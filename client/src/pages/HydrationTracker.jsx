@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useCollection } from '../hooks/useFirestore'
+import { useCollection } from '../hooks/useSupabase'
 import { useAuth } from '../contexts/AuthContext'
 import { todayStr } from '../utils/helpers'
 import { calculateHydrationGoal } from '../utils/calculations'

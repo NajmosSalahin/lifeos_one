@@ -19,7 +19,7 @@ export default function Register() {
     if (password.length < 6) { setError('Password must be at least 6 characters'); return }
     setLoading(true)
     try { await register(email, password, name) }
-    catch (err) { setError(err.message.replace('Firebase: ', '').replace(/\(.*\)/, '')) }
+    catch (err) { setError(err.message.replace(/^\w+:\s*/, '').replace(/\(.*\)/, '')) }
     setLoading(false)
   }
 

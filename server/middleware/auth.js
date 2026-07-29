@@ -1,4 +1,4 @@
-import { adminAuth } from '../config/firebase.js'
+import { supabaseAdmin } from '../config/supabase.js'
 
 export async function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization
@@ -7,8 +7,9 @@ export async function verifyToken(req, res, next) {
   }
   try {
     const token = authHeader.split('Bearer ')[1]
-    const decoded = await adminAuth.verifyIdToken(token)
-    req.user = decoded
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
+    if (error || !user) throw new Error('Invalid token')
+    req.user = { uid: user.id, ...user }
     next()
   } catch (err) {
     return res.status(401).json({ error: 'Invalid token' })

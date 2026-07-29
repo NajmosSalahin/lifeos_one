@@ -1,12 +1,24 @@
 import { useRef, useState, createElement } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
-import { useCollection } from '../hooks/useFirestore'
+import { useCollection } from '../hooks/useSupabase'
 import { exportCSV, exportMD, exportJSON } from '../utils/export'
 import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { ConfirmModal, useModal } from '../components/ui/Modal'
-import { doc, setDoc, collection, getDocs, deleteDoc } from 'firebase/firestore'
-import { db } from '../firebase'
+import { supabase } from '../supabase'
+
+function camelToSnake(str) {
+  return str.replace(/[A-Z]/g, c => '_' + c.toLowerCase())
+}
+
+function mapRowToSnake(obj) {
+  if (!obj || typeof obj !== 'object') return obj
+  const result = {}
+  for (const [key, value] of Object.entries(obj)) {
+    result[camelToSnake(key)] = value
+  }
+  return result
+}
 import { IconExport, IconImport, IconTheme, IconMoon, IconSun, IconPalette, IconLeaf, IconSparkle } from '../utils/icons'
 import { useToast } from '../components/ui/Toast'
 
@@ -65,17 +77,20 @@ export default function Settings() {
       try {
         const data = JSON.parse(evt.target.result)
         if (typeof data !== 'object') throw new Error('Invalid format')
+        const TABLE_MAP = { sleepLogs: 'sleep', hydrationLogs: 'hydration', breathingSessions: 'breathing', customDrinks: 'custom_drinks', breathingTechniques: 'breathing_techniques' }
         const collections = ['moods', 'sleepLogs', 'hydrationLogs', 'breathingSessions', 'journals', 'habits', 'customDrinks', 'breathingTechniques']
-        const collectionMap = { sleepLogs: 'sleep', hydrationLogs: 'hydration', breathingSessions: 'breathing', customDrinks: 'customDrinks', breathingTechniques: 'breathingTechniques' }
         let total = 0
         for (const key of collections) {
           const items = data[key]
           if (!Array.isArray(items)) continue
-          const path = collectionMap[key] || key
-          for (const item of items) {
-            const ref = doc(db, 'users', user.uid, path, item.id)
-            await setDoc(ref, item, { merge: true })
-            total++
+          const t = TABLE_MAP[key] || key
+          const rows = items.map(item => {
+            const { id, ...rest } = item
+            return { ...mapRowToSnake(rest), user_id: user.id }
+          })
+          if (rows.length > 0) {
+            const { error } = await supabase.from(t).insert(rows)
+            if (!error) total += rows.length
           }
         }
         setImportResult(`Restored ${total} documents from backup. Reload to see your data.`)
@@ -93,14 +108,13 @@ export default function Settings() {
   }
 
   async function executeFactoryReset() {
+    const TABLE_MAP = { customDrinks: 'custom_drinks', breathingTechniques: 'breathing_techniques' }
     const paths = ['moods', 'habits', 'sleep', 'hydration', 'journals', 'breathing', 'customDrinks', 'breathingTechniques']
     for (const path of paths) {
-      const ref = collection(db, 'users', user.uid, path)
-      const snap = await getDocs(ref)
-      const deletes = snap.docs.map(d => deleteDoc(doc(db, 'users', user.uid, path, d.id)))
-      await Promise.all(deletes)
+      const t = TABLE_MAP[path] || path
+      await supabase.from(t).delete().eq('user_id', user.id)
     }
-    await deleteDoc(doc(db, 'users', user.uid))
+    await supabase.from('profiles').delete().eq('id', user.id)
     localStorage.removeItem('omniTrackerState')
     window.location.reload()
   }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useCollection } from '../hooks/useFirestore'
+import { useCollection } from '../hooks/useSupabase'
 import { todayStr } from '../utils/helpers'
 import { moodIcon } from '../utils/calculations'
 import { MOOD_LABELS, ENERGY_LABELS } from '../utils/defaults'

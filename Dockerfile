@@ -1,0 +1,20 @@
+FROM node:20-alpine AS client-build
+WORKDIR /client
+ARG VITE_SUPABASE_URL
+ARG VITE_SUPABASE_ANON_KEY
+ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
+ENV VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY
+COPY client/package*.json ./
+RUN npm ci
+COPY client/ .
+RUN npm run build
+
+FROM node:20-alpine
+WORKDIR /app
+COPY server/package*.json ./server/
+RUN npm ci --only=production --prefix server
+COPY server/ ./server/
+COPY --from=client-build /client/dist ./client/dist
+ENV PORT=3001
+EXPOSE 3001
+CMD ["node", "server/server.js"]

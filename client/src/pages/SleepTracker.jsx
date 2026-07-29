@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { useCollection } from '../hooks/useFirestore'
+import { useCollection } from '../hooks/useSupabase'
 import { todayStr, formatTime } from '../utils/helpers'
 import { calculateSleepDuration, calculateSleepCycles, countCyclesBetween, calculateBedtimeFromCycles } from '../utils/calculations'
 import { LoadingSpinner } from '../components/ui/Loaders'

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useCollection } from '../hooks/useFirestore'
+import { useCollection } from '../hooks/useSupabase'
 import { todayStr, daysAgo, weekdayAbbr, isToday } from '../utils/helpers'
 import { calculateStreak } from '../utils/calculations'
 import { LoadingSpinner } from '../components/ui/Loaders'

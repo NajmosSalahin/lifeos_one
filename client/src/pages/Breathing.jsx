@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { useCollection } from '../hooks/useFirestore'
+import { useCollection } from '../hooks/useSupabase'
 import { todayStr, formatSeconds } from '../utils/helpers'
 import { LoadingSpinner } from '../components/ui/Loaders'
 import Modal, { useModal } from '../components/ui/Modal'
@@ -233,9 +233,8 @@ export default function Breathing() {
           </div>
           <button onClick={async () => {
             if (!custom.name.trim()) return
-            const id = 'bc' + Date.now()
-            await addTech({ id, name: custom.name.trim(), inhale: custom.inhale, hold1: custom.hold1, exhale: custom.exhale, hold2: custom.hold2 })
-            setActiveTechId(id)
+            const newId = await addTech({ name: custom.name.trim(), inhale: custom.inhale, hold1: custom.hold1, exhale: custom.exhale, hold2: custom.hold2 })
+            setActiveTechId(newId)
             customModal.close()
             toast('Technique created!')
           }} className="btn btn-primary w-full">Create & Select</button>

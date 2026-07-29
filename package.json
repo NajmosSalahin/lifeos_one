@@ -7,7 +7,7 @@
     "dev:server": "npm run dev --prefix server",
     "build": "npm install --prefix client && npm install --prefix server && npm run build --prefix client",
     "start": "npm run start --prefix server",
-    "deploy": "npm run build && firebase deploy"
+    "deploy": "npm run build"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
