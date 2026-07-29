@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function loadProfile(uid) {
-    const { data, error } = await supabase.from('profiles').select('*').eq('id', uid).single()
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', uid).maybeSingle()
     if (data && !error) {
       const camel = mapProfileToCamel(data)
       setProfile(camel)
