@@ -29,7 +29,7 @@ export default function HabitTracker() {
     setError('')
     const name = newName.trim()
     if (!name) { setError('Habit name cannot be empty'); return }
-    add({ name, archived: false, doneDates: [], skippedDates: [], weeklyGoal: 0, freezeLimit: 0, createdAt: Date.now() })
+    add({ name, archived: false, doneDates: [], skippedDates: [], weeklyGoal: 0, freezeLimit: 0, createdAt: new Date().toISOString() })
     setNewName('')
     toast('Habit created')
   }

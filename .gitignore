@@ -2,3 +2,4 @@ node_modules
 .opencode
 .env
 client/dist
+*firebase-adminsdk*.json

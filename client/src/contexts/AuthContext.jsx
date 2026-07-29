@@ -74,7 +74,7 @@ export function AuthProvider({ children }) {
       displayName: user?.displayName || 'User',
       email: user?.email || '',
       ...p,
-      createdAt: Date.now()
+      createdAt: new Date().toISOString()
     })
     const { error } = await supabase.from('profiles').upsert(profSnake)
     if (error) throw error

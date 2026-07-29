@@ -25,7 +25,8 @@ app.use(helmet({
         "https://api.open-meteo.com",
         "https://fonts.googleapis.com",
         "https://fonts.gstatic.com",
-        "https://*.supabase.co"
+        "https://*.supabase.co",
+        "wss://*.supabase.co"
       ],
       imgSrc: ["'self'", "blob:", "data:"],
       upgradeInsecureRequests: []
