@@ -1,5 +1,6 @@
 {
   "name": "zenith-tracker-server",
+  "private": true,
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -12,6 +13,7 @@
     "express": "^4.18.2",
     "firebase-admin": "^12.0.0",
     "helmet": "^7.1.0",
-    "negotiator": "0.6.3"
+    "negotiator": "0.6.3",
+    "yallist": "^4.0.0"
   }
 }
